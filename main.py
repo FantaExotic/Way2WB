@@ -4,6 +4,7 @@ from tkcalendar import DateEntry
 import yfinance as yf
 import matplotlib.pyplot as plt
 import tkinter.messagebox as messagebox
+import pandas as pd
 
 class GUI(tk.Tk):
     def __init__(self):
@@ -17,7 +18,7 @@ class GUI(tk.Tk):
         self.start_date_var = tk.StringVar(self)
         self.end_date_var = tk.StringVar(self)
         self.symbol_var = tk.StringVar(self)
-        self.ma_entry = [ttk.Entry(self)]
+        self.ma_entry = []
 
         # Create error style
         self.style = ttk.Style()
@@ -44,50 +45,58 @@ class GUI(tk.Tk):
         self.generate_data_button = ttk.Button(self, text="Generate Data", command=self.generate_data)
         self.generate_data_button.grid(row=0, column=3, padx=5, pady=5, sticky="ne")
 
+        self.export_csv_button = ttk.Button(self, text="Export CSV", command=self.export_csv)
+        self.export_csv_button.grid(row=1, column=3, padx=5, pady=5, sticky="ne")
+
         self.update_gui_button = ttk.Button(self, text="Update GUI", command=self.update_gui)
-        self.update_gui_button.grid(row=1, column=3, padx=5, pady=5, sticky="ne")
+        self.update_gui_button.grid(row=2, column=3, padx=5, pady=5, sticky="ne")
 
         self.symbol_info_label = ttk.Label(self, text="Stock Symbol found: False\nShortname:\nSymbol:\nISIN:")
-        self.symbol_info_label.grid(row=2, column=2, columnspan=2, padx=5, pady=5)
+        self.symbol_info_label.grid(row=3, column=2, columnspan=2, padx=5, pady=5)
 
         ma_label = ttk.Label(self, text="Moving average:")
-        ma_label.grid(row=3, column=0, padx=5, pady=5)
-
-        # initialize first entry field for moving average
-        self.ma_entry[0].grid(row=3, column=1, padx=5, pady=5)
+        ma_label.grid(row=4, column=0, padx=5, pady=5)
 
         self.add_ma_button = ttk.Button(self, text="+", command=self.add_ma_entry)
-        self.add_ma_button.grid(row=3, column=2, padx=5, pady=5)
+        self.add_ma_button.grid(row=4, column=2, padx=5, pady=5)
 
         self.remove_ma_button = ttk.Button(self, text="-", command=self.remove_ma_entry)
-        self.remove_ma_button.grid(row=3, column=3, padx=5, pady=5)
+        self.remove_ma_button.grid(row=4, column=3, padx=5, pady=5)
 
     def add_ma_entry(self):
         new_ma_entry = ttk.Entry(self)
-        new_ma_entry.grid(row=len(self.ma_entry) + 3, column=1, padx=5, pady=5)
+        new_ma_entry.grid(row=len(self.ma_entry) + 4, column=1, padx=5, pady=5)
         self.ma_entry.append(new_ma_entry)
 
     def remove_ma_entry(self):
-        if len(self.ma_entry) > 1:
+        if len(self.ma_entry) > 0:
             self.ma_entry[-1].destroy()
             self.ma_entry.pop()
+
+    def export_csv(self):
+        if self.data is not None:
+            filename = "stock_data.csv"
+            self.data.to_csv(filename)
+            messagebox.showinfo("Export Successful", f"Data exported to {filename}")
+        else:
+            messagebox.showerror("Export Error", "No data available to export")
 
     def generate_data(self):
         # Plot Close data
         try:
-            movingAverageInput = [int(entry.get()) for entry in self.ma_entry]
-            self.movingAverage = [self.data['Close'].rolling(window=entry).mean() for entry in movingAverageInput]
+            if len(self.ma_entry) > 0:
+                movingAverageInput = [int(entry.get()) for entry in self.ma_entry]
+                self.movingAverage = [self.data['Close'].rolling(window=entry).mean() for entry in movingAverageInput]
+                # Plot Moving Averages with legends
+                for i, ma in enumerate(self.movingAverage):
+                    ma.plot(label=f'{self.ticker.info["symbol"]} - MA {movingAverageInput[i]}')
             self.data['Close'].plot(label=f'{self.ticker.info["shortName"]} - ({self.ticker.info["symbol"]})')
-            # Plot Moving Averages with legends
-            for i, ma in enumerate(self.movingAverage):
-                ma.plot(label=f'{self.ticker.info["symbol"]} - MA {movingAverageInput[i]}')
             plt.title('Stock data')
             plt.legend()
             plt.show()
-        except:
+        except Exception as e:
             # Change appearance to show error
-            messagebox.showerror("Error", "Enter valid stock symbol and valid integers for all all moving average boxes")
-            
+            messagebox.showerror("Error", "Enter valid stock symbol and valid integers for all moving average boxes")
 
     def update_gui(self):
         start_date = self.start_date_var.get()
