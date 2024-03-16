@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 import yfinance as yf
 import matplotlib.pyplot as plt
+import tkinter.messagebox as messagebox
 
 class GUI(tk.Tk):
     def __init__(self):
@@ -18,6 +19,10 @@ class GUI(tk.Tk):
         self.symbol_var = tk.StringVar(self)
         self.ma_entry = [ttk.Entry(self)]
 
+        # Create error style
+        self.style = ttk.Style()
+        self.style.configure("Error.TEntry", background="pink")
+
         # Create widgets
         start_label = ttk.Label(self, text="Start Date:")
         start_label.grid(row=0, column=0, padx=5, pady=5)
@@ -31,7 +36,7 @@ class GUI(tk.Tk):
                                         foreground='white', borderwidth=2, date_pattern='y-mm-dd')
         self.end_date_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        symbol_label = ttk.Label(self, text="Enter Symbol:")
+        symbol_label = ttk.Label(self, text="Enter Stock Symbol:")
         symbol_label.grid(row=2, column=0, padx=5, pady=5)
         self.symbol_entry = ttk.Entry(self, textvariable=self.symbol_var)
         self.symbol_entry.grid(row=2, column=1, padx=5, pady=5)
@@ -42,10 +47,10 @@ class GUI(tk.Tk):
         self.update_gui_button = ttk.Button(self, text="Update GUI", command=self.update_gui)
         self.update_gui_button.grid(row=1, column=3, padx=5, pady=5, sticky="ne")
 
-        self.symbol_info_label = ttk.Label(self, text="Symbol input found: False\nShortname:\nSymbol:\nISIN:")
+        self.symbol_info_label = ttk.Label(self, text="Stock Symbol found: False\nShortname:\nSymbol:\nISIN:")
         self.symbol_info_label.grid(row=2, column=2, columnspan=2, padx=5, pady=5)
 
-        ma_label = ttk.Label(self, text="Gleitender Durchschnitt:")
+        ma_label = ttk.Label(self, text="Moving average:")
         ma_label.grid(row=3, column=0, padx=5, pady=5)
 
         # initialize first entry field for moving average
@@ -69,16 +74,20 @@ class GUI(tk.Tk):
 
     def generate_data(self):
         # Plot Close data
-        self.data['Close'].plot(label='Close')
-        movingAverageInput = [int(entry.get()) for entry in self.ma_entry]
-        self.movingAverage = [self.data['Close'].rolling(window=entry).mean() for entry in movingAverageInput]
-        
-        # Plot Moving Averages with legends
-        for i, ma in enumerate(self.movingAverage):
-            ma.plot(label=f'MA {movingAverageInput[i]}')
-        plt.title(self.ticker.info['shortName'])
-        plt.legend()
-        plt.show()
+        try:
+            movingAverageInput = [int(entry.get()) for entry in self.ma_entry]
+            self.movingAverage = [self.data['Close'].rolling(window=entry).mean() for entry in movingAverageInput]
+            self.data['Close'].plot(label=f'{self.ticker.info["shortName"]} - ({self.ticker.info["symbol"]})')
+            # Plot Moving Averages with legends
+            for i, ma in enumerate(self.movingAverage):
+                ma.plot(label=f'{self.ticker.info["symbol"]} - MA {movingAverageInput[i]}')
+            plt.title('Stock data')
+            plt.legend()
+            plt.show()
+        except:
+            # Change appearance to show error
+            messagebox.showerror("Error", "Enter valid stock symbol and valid integers for all all moving average boxes")
+            
 
     def update_gui(self):
         start_date = self.start_date_var.get()
@@ -96,9 +105,9 @@ class GUI(tk.Tk):
                 short_name = self.ticker.info['shortName']
                 symbol = self.ticker.info['symbol']
                 isin = self.ticker.isin
-                self.symbol_info_label.config(text=f"Symbol input found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
+                self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
             except Exception as e:
-                self.symbol_info_label.config(text="Symbol input found: False")
+                self.symbol_info_label.config(text="Stock Symbol found: False\nShortname:\nSymbol:\nISIN:")
                 pass
 
         self.start_date_var.set(start_date)
