@@ -10,13 +10,16 @@ class Watchlistview(tk.Frame):
         self.grid_rowconfigure(3, weight=10)  # more weight to row with Listbox
         
         self.button_return = tk.Button(self, text="X")
-        self.button_return.grid(row=0, column=2, padx=5, pady=5, sticky="ne")
+        self.button_return.grid(row=0, column=3, padx=5, pady=5, sticky="ne")
 
         self.label = tk.Label(self, text="Stock Symbol found: False\nShortname:\nSymbol:\nISIN:")
         self.label.grid(row=0, column=0, padx=5, pady=5, sticky="ne")
 
-        self.list = tk.Listbox(self)
-        self.list.grid(row=3, column=0, padx=15, pady=15, sticky="nsew")
+        self.listbox = tk.Listbox(self)
+        self.listbox.grid(row=3, column=0, padx=15, pady=15, sticky="nsew")
+
+        self.enterbutton = tk.Button(self, text="Add")
+        self.enterbutton.grid(row=0, column=2, padx=5, pady=5, sticky="ne")
         
         self.symbol_var = tk.StringVar(self)
         self.symbol_entry = tk.Entry(self, textvariable=self.symbol_var)
@@ -36,4 +39,14 @@ class Watchlistview(tk.Frame):
         pass
 
     def appendWatchlist(self):
-        
+        pass
+
+    def appendListbox(self,ticker):
+        temp = ' '.join(ticker)
+        self.listbox.insert(tk.END,ticker)
+
+    def initListbox(self,model):
+        pass
+        for each in model.stockdata.keys():
+            temp = f'{each} {model.shortname[each]}'
+            self.listbox.insert(tk.END,temp)
