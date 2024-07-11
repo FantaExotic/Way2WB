@@ -73,3 +73,19 @@ class Model:
             return 1    # return value controls if stockticker is duplicate in data
         else:
             return 0
+        
+    def remove_stockticker_from_watchlist(self,symbol):
+        try:
+            if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
+                data = []
+                with open(self.watchlistfile, 'r') as file:
+                    data = json.load(file)
+                for index,each in enumerate(data):
+                    if each[0]==symbol:
+                        data.pop(index)
+                with open(self.watchlistfile, 'w') as file:
+                    json.dump(data, file, indent=4)
+                
+        except FileNotFoundError:
+            pass
+        

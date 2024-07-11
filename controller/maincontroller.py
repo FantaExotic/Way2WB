@@ -10,6 +10,10 @@ class Maincontroller:
 
     def bind_view_controller(self):
         self.view.mainview.button_configWatchlist.configure(command=self.handle_button_configWatchlist)
+        self.view.mainview.button_configAnalysis.configure(command=self.handle_button_configAnalysis)
 
     def handle_button_configWatchlist(self):
         self.view.setWatchlistview()
+
+    def handle_button_configAnalysis(self):
+        self.view.setAnalysisview()

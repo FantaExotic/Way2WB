@@ -1,22 +1,14 @@
 [
     [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
         "MSFT",
         "Microsoft Corporation"
     ],
     [
-        "TSLA",
-        "Tesla, Inc."
+        "BTC-USD",
+        "Bitcoin USD"
     ],
     [
-        "AMD",
-        "Advanced Micro Devices, Inc."
-    ],
-    [
-        "HUBS",
-        "HubSpot, Inc."
+        "AAPL",
+        "Apple Inc."
     ]
 ]
