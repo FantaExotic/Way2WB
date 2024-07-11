@@ -7,7 +7,6 @@ class Model:
     def __init__(self):
         self.stockdata = dict()
         self.shortname = dict() # lookup dict to identify shortname of symbol
-        self.watchlist = []     # selected stocks from list
         self.date_start = None
         self.date_end = None
         self.watchlist_input = None # to add to watchlist

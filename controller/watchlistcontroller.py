@@ -8,6 +8,7 @@ class Watchlistcontroller:
         self.frame = self.view.watchlistview
         self.bind_view_controller()
         self.bind_symbolentry_enterpressed()
+        self.bind_buttonDelete_listbox()
         self.initWatchlistAndListbox()
 
     def initWatchlistAndListbox(self):
@@ -30,3 +31,11 @@ class Watchlistcontroller:
 
     def bind_symbolentry_enterpressed(self):
         self.view.watchlistview.enterbutton.configure(command=self.handle_entry_appendWatchlist)
+
+    def bind_buttonDelete_listbox(self):
+        self.view.watchlistview.button_delete.configure(command=self.handle_buttonDelete)
+
+    def handle_buttonDelete(self):
+        self.view.watchlistview.deleteListboxElement()
+        #TODO: remove data from model
+        self.model.stockdata.pop()
