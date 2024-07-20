@@ -12,6 +12,8 @@ class Model:
         self.watchlist_input = None # to add to watchlist
         self.basepath = Path(__file__).resolve().parent
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
+        self.methods = []
+        self.movingaverage_symbol = "MA"
 
     def initWatchlist(self):
         try:
@@ -89,3 +91,5 @@ class Model:
         except FileNotFoundError:
             pass
         
+    def remove_method(self,index):
+        self.methods.pop(index)

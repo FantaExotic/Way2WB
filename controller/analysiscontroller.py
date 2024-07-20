@@ -1,5 +1,6 @@
 from model import Model
 from view.view import View
+import tkinter.messagebox as messagebox
 
 class Analysiscontroller:
     def __init__(self, model: Model, view: View):
@@ -9,11 +10,6 @@ class Analysiscontroller:
         self.bind_view_controller()
         self.bind_symbolentry_enterpressed()
         self.bind_buttonDelete_method()
-        #self.updateListbox()
-
-    def updateListbox(self):
-        #TODO fix because it adds all data to listbox again after clicking on "analysis" in mainview
-        self.view.analysisview.updateListbox(self.model)
 
     def bind_view_controller(self):
         self.view.analysisview.button_return.configure(command=self.handle_buttonReturn)
@@ -22,13 +18,22 @@ class Analysiscontroller:
         self.view.setMainview()
 
     def bind_symbolentry_enterpressed(self):
-        self.view.analysisview.enterbutton.configure(command=self.handle_entry_appendWatchlist)
+        self.view.analysisview.enterbutton.configure(command=self.handle_entry_method)
 
     def bind_buttonDelete_method(self):
         self.view.analysisview.button_delete.configure(command=self.handle_buttonDelete)
 
     def handle_buttonDelete(self):
-        pass
+        index = self.view.analysisview.deleteMethod()
+        self.model.remove_method(index)
 
-    def handle_entry_appendWatchlist(self):
-        pass
+    #TODO: add selection for multiple methods
+    def handle_entry_method(self):
+        try:
+            _input = int(self.view.analysisview.symbol_var.get())
+            self.view.analysisview.add_method(_input)
+            temp = dict(method = "MA", value = _input)
+            self.model.methods.append(temp)
+        except Exception as e:
+            # Change appearance to show error
+            messagebox.showerror("Error", "Enter integer value!")

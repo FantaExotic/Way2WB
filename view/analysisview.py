@@ -28,6 +28,10 @@ class Analysisview(tk.Frame):
         self.listbox = CheckboxTreeview(self)
         self.listbox.grid(row=3, column=0, padx=15, pady=15, sticky="nsew")
 
+        self.methods = []
+        self.listbox_methods = tk.Listbox(self)
+        self.listbox_methods.grid(row=3, column=1, padx=15, pady=15, sticky="nsew")
+
         style = ttk.Style(self)
         style.layout('Checkbox.Treeview.Item', 
              [('Treeitem.padding',
@@ -38,7 +42,9 @@ class Analysisview(tk.Frame):
                                                                {'side': 'left', 'sticky': ''})]})]})])
         style.configure('Checkbox.Treeview', borderwidth=1, relief='sunken')
 
-    def add_ma_entry(self):
+    def add_method(self, param):
+        temp = f'moving average: {param}'
+        self.listbox_methods.insert(tk.END,temp)
         pass
 
     def remove_ma_entry(self):
@@ -61,4 +67,6 @@ class Analysisview(tk.Frame):
     #        #self.listbox.insert(tk.END,temp)
 
     def deleteMethod(self):
-        pass
+        selected_element = self.listbox_methods.curselection()[0]
+        self.listbox_methods.delete(selected_element)
+        return selected_element #return index to remove from model.methods

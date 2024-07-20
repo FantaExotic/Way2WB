@@ -11,6 +11,9 @@ class Mainview(tk.Frame):
         self.button_configAnalysis = tk.Button(self, text="Configure analysis")
         self.button_configAnalysis.grid(row=2, column=3, padx=5, pady=5, sticky="ne")
 
+        self.button_generateGraph = tk.Button(self,text="Generate Graph")
+        self.button_generateGraph.grid(row=3, column=3, padx=5, pady=5, sticky="ne")
+
     def create_mainview(self):
         pass
 

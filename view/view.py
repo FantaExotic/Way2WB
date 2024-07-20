@@ -4,6 +4,7 @@ from view.root import Root
 from view.mainview import Mainview
 from view.watchlistview import Watchlistview
 from view.analysisview import Analysisview
+from view.graphicview import Graphicview
 
 class View:
     def __init__(self, model: Model) -> None:
@@ -12,6 +13,7 @@ class View:
         self.mainview = Mainview(self.root)
         self.watchlistview = Watchlistview(self.root)
         self.analysisview = Analysisview(self.root)
+        #self.graphicview = Graphicview(self.root)
         self.currentview = self.mainview
         self.setMainview()
 
@@ -32,6 +34,9 @@ class View:
             self.currentview.grid_forget()
         self.currentview = self.analysisview
         self.currentview.grid(row=0, column=0, sticky="nsew")
+
+    def setGraphview(self):
+        plotgraph = Graphicview(self.model)
 
     def currentview(self):
         pass

@@ -1,14 +1,22 @@
 [
     [
+        "AAPL",
+        "Apple Inc."
+    ],
+    [
         "MSFT",
         "Microsoft Corporation"
+    ],
+    [
+        "TSLA",
+        "Tesla, Inc."
     ],
     [
         "BTC-USD",
         "Bitcoin USD"
     ],
     [
-        "AAPL",
-        "Apple Inc."
+        "TLSA",
+        "Tiziana Life Sciences Ltd"
     ]
 ]
