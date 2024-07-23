@@ -36,7 +36,7 @@ class View:
         self.currentview.grid(row=0, column=0, sticky="nsew")
 
     def setGraphview(self):
-        plotgraph = Graphicview(self.model)
+        plotgraph = Graphicview(self.model, self.analysisview)
 
     def currentview(self):
         pass

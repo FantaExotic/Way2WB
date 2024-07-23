@@ -1,0 +1,11 @@
+controller/watchlistcontroller.py
+controller/__pycache__/analysiscontroller.cpython-38.pyc
+controller/__pycache__/controller.cpython-38.pyc
+controller/__pycache__/maincontroller.cpython-38.pyc
+controller/__pycache__/watchlistcontroller.cpython-38.pyc
+__pycache__/model.cpython-38.pyc
+view/__pycache__/analysisview.cpython-38.pyc
+view/__pycache__/graphicview.cpython-38.pyc
+view/__pycache__/mainview.cpython-38.pyc
+view/__pycache__/view.cpython-38.pyc
+view/__pycache__/watchlistview.cpython-38.pyc

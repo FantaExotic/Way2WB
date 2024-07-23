@@ -59,13 +59,6 @@ class Analysisview(tk.Frame):
     def appendWatchlist(self):
         pass
 
-    ##TODO: write generic function for adding listbox element
-    #def initListbox(self,model):
-    #    for each in model.stockdata.keys():
-    #        temp = f'{each} {model.shortname[each]}'
-    #        self.listbox.insert('', 'end',text=temp)
-    #        #self.listbox.insert(tk.END,temp)
-
     def deleteMethod(self):
         selected_element = self.listbox_methods.curselection()[0]
         self.listbox_methods.delete(selected_element)

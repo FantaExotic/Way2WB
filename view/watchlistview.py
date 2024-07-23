@@ -42,22 +42,3 @@ class Watchlistview(tk.Frame):
 
     def appendWatchlist(self):
         pass
-
-#    #TODO: write generic function for adding listbox element
-#    def addListboxElement(self,ticker):
-#        temp = ' '.join(ticker)
-#        self.listbox.insert(tk.END,temp)
-#        self.symbol_entry.delete(0,"end")
-#
-#    #TODO: write generic function for adding listbox element
-#    def initListbox(self,model):
-#        for each in model.stockdata.keys():
-#            temp = f'{each} {model.shortname[each]}'
-#            self.listbox.insert(tk.END,temp)
-#
-#    def deleteListboxElement(self):
-#        selected_element = self.listbox.curselection()[0]
-#        selected_text = self.listbox.get(selected_element)
-#        symbol = selected_text.split(" ")[0]
-#        self.listbox.delete(selected_element)
-#        return symbol
