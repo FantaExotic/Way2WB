@@ -52,6 +52,9 @@
         <height>591</height>
        </rect>
       </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
       <column>
        <property name="text">
         <string>Stockname</string>
@@ -83,17 +86,70 @@
      <attribute name="title">
       <string>Configure Analysis</string>
      </attribute>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QTableWidget" name="tableWidget_2">
       <property name="geometry">
        <rect>
-        <x>250</x>
-        <y>170</y>
-        <width>75</width>
-        <height>24</height>
+        <x>50</x>
+        <y>50</y>
+        <width>471</width>
+        <height>531</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Statistical Method</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Value</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QComboBox" name="comboBox">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>100</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>70</y>
+        <width>111</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>button2</string>
+       <string>Statistical Method</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit_3">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>230</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>600</x>
+        <y>200</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Input value</string>
       </property>
      </widget>
     </widget>
@@ -101,8 +157,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>160</y>
+      <x>820</x>
+      <y>250</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -114,11 +170,34 @@
    <widget class="QPlainTextEdit" name="plainTextEdit">
     <property name="geometry">
      <rect>
-      <x>790</x>
-      <y>190</y>
+      <x>810</x>
+      <y>280</y>
       <width>151</width>
       <height>31</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="plainTextEdit_2">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>190</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>170</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Search stock</string>
     </property>
    </widget>
   </widget>
@@ -128,7 +207,7 @@
      <x>0</x>
      <y>0</y>
      <width>984</width>
-     <height>22</height>
+     <height>33</height>
     </rect>
    </property>
   </widget>
