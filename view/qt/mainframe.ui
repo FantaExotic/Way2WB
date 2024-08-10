@@ -164,7 +164,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>add symbol to watchlist</string>
+     <string>Add symbol to watchlist</string>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="plainTextEdit">
@@ -200,6 +200,29 @@
      <string>Search stock</string>
     </property>
    </widget>
+   <widget class="QComboBox" name="comboBox_2">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>400</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>370</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Time period</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -207,7 +230,7 @@
      <x>0</x>
      <y>0</y>
      <width>984</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

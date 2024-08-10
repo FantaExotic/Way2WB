@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QChec
 from view.qt.mainframe import Ui_frame_main
 from model import Model
 from PySide6.QtCore import Qt, QEvent
+from PySide6.QtWidgets import QPlainTextEdit
 
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
@@ -9,14 +10,34 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.setupUi(self)
         self.model = model
         self.init_statMethods()
+        self.init_intervals()
+        self.init_tableWidget()
 
     # add statistical methods to combobox, which contains all statistical methods
     def init_statMethods(self):
         self.comboBox.addItem("Moving Average")
+    
+    def init_intervals(self):
+        for key,value in self.model.valid_periods.items():
+            self.comboBox_2.addItem(value)
+
+    # init tableWidget based on self.model.tickerlist, which contains downloaded tickers from watchlist
+    def init_tableWidget(self):
+        for index,each in enumerate(self.model.tickerlist):
+            # Adding the data to tableWidget
+            row_position = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(row_position)
+
+            stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
+            stockvalue.setData(Qt.EditRole, 1234)
+            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(each.info["shortName"]))
+            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(each.info["symbol"]))
+            self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
+            self.tableWidget.setItem(row_position, 3, stockvalue)
 
     # add statistical method to tableWidget_2 (analysislist)
     def handle_enter_press_plainTextEdit_3(self):
-        input_text = self.plainTextEdit_3.toPlainText().strip()
+        input_text = self.get_plaintextedit_input(self.plainTextEdit_3)
         if input_text:
             try:
                 input_text_filtered = int(input_text)
@@ -43,9 +64,13 @@ class Mainview(QMainWindow, Ui_frame_main):
             self.tableWidget_2.removeRow(index.row())
 
     # adds stockdata to tablewidget (watchlist)
-    def handle_enter_press_plainTextEdit(self):
-        input_text = self.plainTextEdit.toPlainText().strip()
+    def handle_enter_press_plainTextEdit(self,ticker):
+        input_text = self.get_plaintextedit_input(self.plainTextEdit)
         if input_text:
+            #data from model
+            short_name = ticker.info['shortName']
+            symbol = ticker.info['symbol']
+            isin = ticker.isin
             # Clear the plainTextEdit
             self.plainTextEdit.clear()
 
@@ -55,11 +80,10 @@ class Mainview(QMainWindow, Ui_frame_main):
 
             stockvalue = QTableWidgetItem()
             stockvalue.setData(Qt.EditRole, 1234)
-
-            self.tableWidget.setItem(row_position, 0, QTableWidgetItem("Apple"))
-            self.tableWidget.setItem(row_position, 1, QTableWidgetItem("AAPL"))
-            self.tableWidget.setItem(row_position, 2, stockvalue)
-            self.tableWidget.setItem(row_position, 3, QTableWidgetItem("121"))
+            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(short_name))
+            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(symbol))
+            self.tableWidget.setItem(row_position, 2, QTableWidgetItem(isin))
+            self.tableWidget.setItem(row_position, 3, stockvalue)
 
             analyze_checkbox = QCheckBox()
             analyze_checkbox.setChecked(True)
@@ -69,13 +93,16 @@ class Mainview(QMainWindow, Ui_frame_main):
     def handle_delete_press_tableWidget(self):
         # Get the selected rows
         selected_rows = self.tableWidget.selectionModel().selectedRows()
+        symbolDeleteList = list()
         # Iterate through the selected rows in reverse order and delete them
         for index in sorted(selected_rows, reverse=True):
+            symbolDeleteList.append(self.tableWidget.item(selected_rows, 1).text())
             self.tableWidget.removeRow(index.row())
+        return symbolDeleteList
 
     # sorts list based on input in search stock plainTextEdit 
     def handle_search_input_plainTextEdit_2(self):
-        search_text = self.plainTextEdit_2.toPlainText().strip().lower()
+        search_text = self.get_plaintextedit_input(self.plainTextEdit_2)
 
         for row in range(self.tableWidget.rowCount()):
             stockname_item = self.tableWidget.item(row, 0)
@@ -89,3 +116,15 @@ class Mainview(QMainWindow, Ui_frame_main):
                     self.tableWidget.setRowHidden(row, False)
                 else:
                     self.tableWidget.setRowHidden(row, True)
+
+################################################################################
+## 
+## helpfunction:
+## get_plaintextedit_input
+## 
+## Description:
+## returns value of plaintextedit_1_2_3 inputfield
+################################################################################
+    def get_plaintextedit_input(self, qPlainTextEdit: QPlainTextEdit):
+        ret = qPlainTextEdit.toPlainText().strip()
+        return ret

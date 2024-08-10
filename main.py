@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 
 
 def main() -> None:
-    model = Model()
     app = QApplication()
+    model = Model()
     view = Mainview(model)
     controller = Controller(model,view,app)
     controller.run()

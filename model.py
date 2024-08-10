@@ -5,8 +5,7 @@ import os
 
 class Model:
     def __init__(self):
-        self.stockdata = dict()
-        self.shortname = dict() # lookup dict to identify shortname of symbol
+        self.tickerlist = list()
         self.date_start = None
         self.date_end = None
         self.watchlist_input = None # to add to watchlist
@@ -14,8 +13,22 @@ class Model:
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
         self.methods = []
         self.movingaverage_symbol = "MA"
+        self.valid_period_1minute = {"1d": "1 day", 
+                                     "5d": "5 days"}
+        self.valid_period_5minutes = {"1mo": "1 month"}
+        self.valid_period_1hour = {"3mo": "3 months",
+                                    "6mo": "6 months",
+                                    "1y": "1 year",
+                                    "2y": "2 years",}
+        self.valid_period_1day = {"5y": "5 years",
+                                    "10y": "10 years",
+                                    "ytd": "This year",
+                                    "max": "Maximum period"}
+        self.valid_periods = self.valid_period_1minute | self.valid_period_5minutes | self.valid_period_1hour | self.valid_period_1day
+        self.initWatchlist()
 
     def initWatchlist(self):
+        #TODO: do error handling if yt.ticker wasnt found
         try:
             if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
                 #TODO: check if file exists, otherwise create file
@@ -23,33 +36,25 @@ class Model:
                 with open(self.watchlistfile, 'r') as file:
                     data = json.load(file)
                 for each in data:
-                    symbol,shortname = each # because shortname and symbol are splitted
-                    temp= yf.download(symbol, period="max")
-                    self.stockdata[symbol] = temp
-                    self.shortname[symbol] = shortname # lookup dict to identify shortname of symbol
+                    self.tickerlist.append(yf.Ticker(each[0]))  # each[0] = symbol, each[1] = shortName
             else:
                 pass
         except FileNotFoundError:
             pass
             # If the file does not exist, initialize an empty list
 
-    def findTicker(self,symbol):
+    def findTicker(self,symbol: str, interval: str, period: str) -> yf.Ticker:
         # Update the start and end dates
         if symbol:
-            try:
-                self.data = yf.download(symbol, period="max")
-                self.ticker = yf.Ticker(symbol)
-                short_name = self.ticker.info['shortName']
-                symbol = self.ticker.info['symbol']
-                #isin = self.ticker.isin
-                #self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
-                return [symbol,short_name]
-            except Exception as e:
-                #self.symbol_info_label.config(text="Stock Symbol found: False\nShortname:\nSymbol:\nISIN:")
-                return ""
+            ticker = yf.Ticker(symbol)
+            # check to verify if valid ticker was found by checking some info
+            check = ticker.info['symbol']
+            #self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
+            self.tickerlist.append(symbol)
+            return ticker
 
-    def add_stockticker_to_watchlist(self,stockticker):
-        symbol,shortname = stockticker
+
+    def add_stockticker_to_watchlist(self,ticker):
         try:
             data = []
             if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
@@ -63,33 +68,67 @@ class Model:
                     # If the file does not exist, initialize an empty list
                     data = []
 
+        # extract each[0] (symbol) from each element in data, to check for duplicates
+        tmpdata = []
+        for each in data:
+            tmpdata.append(each[0])
+
         # Add the new stock ticker entry
-        if not stockticker in data:
-            data.append(stockticker)
+        if not ticker.info["symbol"] in tmpdata:
+            data.append([ticker.info["symbol"], ticker.info["shortName"]])
             #TODO: add stockticker to self.watchlist variable
             # Save the updated data back to the JSON file
             with open(self.watchlistfile, 'w') as file:
                 json.dump(data, file, indent=4)
-            self.stockdata[symbol] = self.data
-            self.shortname[symbol] = shortname
             return 1    # return value controls if stockticker is duplicate in data
         else:
             return 0
-        
-    def remove_stockticker_from_watchlist(self,symbol):
+
+    def remove_stockticker_from_watchlist(self,symbollist):
         try:
             if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
                 data = []
                 with open(self.watchlistfile, 'r') as file:
                     data = json.load(file)
                 for index,each in enumerate(data):
-                    if each[0]==symbol:
+                    if each[0] in symbollist:   # each[0] = symbol, each[1] = shortName
                         data.pop(index)
+                        for index,ticker in enumerate(self.tickerlist):
+                            if ticker.info["symbol"] == each[0]:
+                                ticker.pop(index)
+                                #TODO: recheck removing from list while iterating through it, because of mutable/immutable objects!!!!!
                 with open(self.watchlistfile, 'w') as file:
                     json.dump(data, file, indent=4)
                 
         except FileNotFoundError:
             pass
-        
+
     def remove_method(self,index):
-        self.methods.pop(index)
+        #TODO: rework!
+        pass
+
+################################################################################
+## 
+## Helpfunction:
+## setTickerArgs
+##  
+## Description:
+## This function adjusts the argument interval for yf.Ticker call based 
+## on the period argument, otherwise YFInvalidPeriodError will be thrown in
+## scrapers/history.py
+## Period/Interval relationship is hardcoded based on codesnipped from line 98-106
+## 
+################################################################################
+    def setTickerArgs(self, period: str) -> str:
+        if period in self.valid_period_1minute.keys():
+            interval = "1m"
+        elif period in self.valid_period_5minutes.keys():
+            interval = "5m"
+        elif period in self.valid_period_1hour.keys():
+            interval = "1h"
+        elif period in self.valid_period_1day.keys():
+            interval = "1d"
+        else:
+            print("period not matching any element in self.valid_periods. default: interval = 1d")
+            interval = "1d"
+        return interval

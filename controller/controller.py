@@ -2,6 +2,7 @@ from model import Model
 from view.mainview import Mainview
 from PySide6.QtWidgets import QApplication, QTableWidgetItem, QCheckBox
 from PySide6.QtCore import Qt, QEvent, QObject
+from helpfunctions import *
 
 class Controller(QObject):
     def __init__(self, model: Model, view: Mainview, app) -> None:
@@ -25,14 +26,26 @@ class Controller(QObject):
         #eventhandler for pressing enter in plainTextEdit to add symbol to watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.view.plainTextEdit:
-                self.view.handle_enter_press_plainTextEdit()
-                #TODO: call method for yfinance ticker/download object
-                return True
+                period = get_keyFromDictValue(self.view.comboBox_2.currentText(), self.model.valid_periods) # helpfunction needed to get key from value and dict
+                interval = self.model.setTickerArgs(period) 
+                try: # try block need to ensure ticker is valid, to prevent typo errors
+                    ticker = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit), period=period, interval=interval)
+                    if ticker:
+                        bool_addToWatchlist = self.model.add_stockticker_to_watchlist(ticker) # bool_addToWatchlist 1 if symbol shall be added, else 0
+                        if bool_addToWatchlist:
+                            self.view.handle_enter_press_plainTextEdit(ticker)
+                    else:
+                        print("symbol not found")
+                        #TODO: highlight symbol not found error in view, in case it happens!
+                except:
+                    print("ticker doesnt contain valid data. Recheck entered stocksymbol")
+                finally:
+                    return True
+
         #eventhandler for pressing delete in tableWidget to remove symbol from watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.view.tableWidget:
-                self.view.handle_delete_press_tableWidget()
-                #TODO: call method for yfinance ticker/download object
+                handle_delete_press_tableWidget = self.view.handle_delete_press_tableWidget()
                 return True
         #eventhandler for entering data in plainTextEdit_2, to search stocks in watchlist
         if event.type() == QEvent.KeyRelease or (event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return):
@@ -48,9 +61,5 @@ class Controller(QObject):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.view.tableWidget_2:
                 self.view.handle_delete_press_tableWidget_2()
-                #TODO: call method for yfinance ticker/download object
                 return True
         return super().eventFilter(source, event)
-    
-
-    
