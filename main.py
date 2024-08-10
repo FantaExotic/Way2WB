@@ -2,6 +2,7 @@ from controller.controller import Controller
 from model import Model
 from view.mainview import Mainview
 from PySide6.QtWidgets import QApplication, QMainWindow
+from view.graphicview import Graphicview
 
 
 def main() -> None:

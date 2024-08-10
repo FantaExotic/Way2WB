@@ -1,13 +1,5 @@
 [
     [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
-        "MSFT",
-        "Microsoft Corporation"
-    ],
-    [
         "TSLA",
         "Tesla, Inc."
     ],
@@ -16,27 +8,11 @@
         "Bitcoin USD"
     ],
     [
-        "TLSA",
-        "Tiziana Life Sciences Ltd"
-    ],
-    [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
         "NVDA",
         "NVIDIA Corporation"
     ],
     [
-        "SMCI",
-        "Super Micro Computer, Inc."
+        "MSTR",
+        "MicroStrategy Incorporated"
     ]
 ]

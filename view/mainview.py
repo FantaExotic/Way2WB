@@ -34,9 +34,14 @@ class Mainview(QMainWindow, Ui_frame_main):
             self.tableWidget.setItem(row_position, 1, QTableWidgetItem(each.info["symbol"]))
             self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
             self.tableWidget.setItem(row_position, 3, stockvalue)
+            
+            # checkbox for analysis
+            analyze_checkbox = QCheckBox()
+            analyze_checkbox.setChecked(True)
+            self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
 
     # add statistical method to tableWidget_2 (analysislist)
-    def handle_enter_press_plainTextEdit_3(self):
+    def handle_enter_press_plainTextEdit_3(self) -> list:
         input_text = self.get_plaintextedit_input(self.plainTextEdit_3)
         if input_text:
             try:
@@ -52,16 +57,22 @@ class Mainview(QMainWindow, Ui_frame_main):
 
                 self.tableWidget_2.setItem(row_position, 0, QTableWidgetItem("Moving Average"))
                 self.tableWidget_2.setItem(row_position, 1, statistical_method_value)
+
+                ret_statMethodName = self.tableWidget_2.item(row_position, 0).text()
+                ret_statMethodArgs = self.tableWidget_2.item(row_position, 1).text()
+                return [ret_statMethodName, ret_statMethodArgs]
             except ValueError:
                 print("Input needs to be of type integer!")
 
     # removes selected method from tablewidget_2
     def handle_delete_press_tableWidget_2(self):
         # Get the selected rows
-        selected_rows = self.tableWidget_2.selectionModel().selectedRows()
-        # Iterate through the selected rows in reverse order and delete them
-        for index in sorted(selected_rows, reverse=True):
-            self.tableWidget_2.removeRow(index.row())
+        selected_row = self.tableWidget_2.currentRow()
+        #TODO: use also here predefined values to determine which row is for name, args etc.
+        statMethodName = self.tableWidget_2.item(selected_row,0).text()
+        statMethodArgs = self.tableWidget_2.item(selected_row,1).text()
+        self.tableWidget_2.removeRow(selected_row)
+        return [statMethodName,statMethodArgs]
 
     # adds stockdata to tablewidget (watchlist)
     def handle_enter_press_plainTextEdit(self,ticker):
@@ -91,14 +102,12 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     # removes selected stock from tablewidget
     def handle_delete_press_tableWidget(self):
-        # Get the selected rows
-        selected_rows = self.tableWidget.selectionModel().selectedRows()
-        symbolDeleteList = list()
-        # Iterate through the selected rows in reverse order and delete them
-        for index in sorted(selected_rows, reverse=True):
-            symbolDeleteList.append(self.tableWidget.item(selected_rows, 1).text())
-            self.tableWidget.removeRow(index.row())
-        return symbolDeleteList
+        # Get the selected row
+        selected_row = self.tableWidget.currentRow()
+        # TODO: add variable for columnposition of symbol, shortname, isin, etc.
+        removedSymbol = self.tableWidget.item(selected_row,1).text()
+        self.tableWidget.removeRow(selected_row)
+        return removedSymbol
 
     # sorts list based on input in search stock plainTextEdit 
     def handle_search_input_plainTextEdit_2(self):
@@ -116,7 +125,18 @@ class Mainview(QMainWindow, Ui_frame_main):
                     self.tableWidget.setRowHidden(row, False)
                 else:
                     self.tableWidget.setRowHidden(row, True)
-
+                    
+        # function to get all selected checkboxes from watchlist, which shall be used for analysis and graph generation
+    def get_selected_Checkboxes(self) -> list:
+        ret = []
+        for row in range(self.tableWidget.rowCount()):
+            #TODO: use variables here to determine which column
+            symbol = self.tableWidget.item(row, 1).text()
+            checkbox = self.tableWidget.cellWidget(row, 4)
+            if checkbox.isChecked():
+                ret.append(symbol)
+        return ret
+    
 ################################################################################
 ## 
 ## helpfunction:
