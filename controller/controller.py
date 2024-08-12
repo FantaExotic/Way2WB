@@ -6,11 +6,12 @@ from PySide6.QtCore import Qt, QEvent, QObject
 from helpfunctions import *
 
 class Controller(QObject):
-    def __init__(self, model: Model, view: Mainview, app) -> None:
+    def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
         super().__init__()
         self.model = model
         self.view = view
         self.app = app
+        self.graphicview = graphicview
 
         # Install event filter for plainTextEdit
         self.view.plainTextEdit.installEventFilter(self)
@@ -28,25 +29,22 @@ class Controller(QObject):
         #eventhandler for pressing enter in plainTextEdit to add symbol to watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.view.plainTextEdit:
-                try: # try block need to ensure ticker is valid, to prevent typo errors
-                    ticker = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit))
-                    if ticker:
-                        bool_addToWatchlist = self.model.add_stockticker_to_watchlist(ticker) # bool_addToWatchlist 1 if symbol shall be added, else 0
-                        if bool_addToWatchlist:
-                            self.view.handle_enter_press_plainTextEdit(ticker)
-                    else:
-                        print("symbol not found")
-                        #TODO: highlight symbol not found error in view, in case it happens!
-                except:
-                    print("ticker doesnt contain valid data. Recheck entered stocksymbol")
-                finally:
+                ticker = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit))
+                if not ticker:
                     return True
+                if self.model.check_duplicates_in_watchlistfile(ticker):
+                    return True
+                self.model.add_stockticker_to_watchlistfile(ticker) # bool_addToWatchlist 1 if symbol shall be added, else 0
+                self.model.add_stock_to_tickerlist(ticker)
+                self.view.handle_enter_press_plainTextEdit(ticker)
+                return True
 
         #eventhandler for pressing delete in tableWidget to remove symbol from watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.view.tableWidget:
                 removedSymbol = self.view.handle_delete_press_tableWidget()
-                self.model.remove_stockticker_from_watchlist(removedSymbol)
+                self.model.remove_stockticker_from_watchlistfile(removedSymbol)
+                self.model.remove_stock_from_tickerlist(removedSymbol)
                 return True
         #eventhandler for entering data in plainTextEdit_2, to search stocks in watchlist
         if event.type() == QEvent.KeyRelease or (event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return):
@@ -74,7 +72,7 @@ class Controller(QObject):
                 # get optimal period/interval pairing to get maximum data based on selected period
                 period = get_keyFromDictValue(self.view.comboBox_2.currentText(), self.model.valid_periods) # helpfunction needed to get key from value and dict
                 interval = self.model.setTickerArgs(period) 
-                graphicview = Graphicview(self.model, self.view, selected_stocks, period, interval)
+                self.graphicview.initstaticGraph(selected_stocks, period, interval)
                 return True
 
         return super().eventFilter(source, event)

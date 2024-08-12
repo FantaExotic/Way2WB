@@ -6,9 +6,6 @@ import os
 class Model:
     def __init__(self):
         self.tickerlist = list()
-        self.date_start = None
-        self.date_end = None
-        self.watchlist_input = None # to add to watchlist
         self.basepath = Path(__file__).resolve().parent
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
         self.methods = []
@@ -27,80 +24,113 @@ class Model:
         self.valid_periods = self.valid_period_1minute | self.valid_period_5minutes | self.valid_period_1hour | self.valid_period_1day
         self.initWatchlist()
 
+    #checks if 
+    def checkWatchlist(self):
+        
+        if not os.path.exists(self.watchlistfile):
+            print("Watchlistfile not found!")
+            Path(self.watchlistfile).touch()
+            return False
+        
+        if not os.path.getsize(self.watchlistfile)>0:
+            print("Watchlistfile is empty!")
+            return False
+        
+        return True
+
+    def getWatchlist(self,ticker):
+
+        # Load existing data from the JSON file
+        with open(self.watchlistfile, 'r') as file:
+            data = json.load(file)
+
+        # extract each[0] (symbol) from each element in data, to check for duplicates
+        tmpdata = [each[0] for each in data]
+        if ticker.info["symbol"] in tmpdata:
+            print("Stock already exists in Watchlist!")
+            return 0
+
     def initWatchlist(self):
-        #TODO: do error handling if yt.ticker wasnt found
-        try:
-            if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
-                #TODO: check if file exists, otherwise create file
-                # Load existing data from the JSON file
-                with open(self.watchlistfile, 'r') as file:
-                    data = json.load(file)
-                for each in data:
-                    self.tickerlist.append(yf.Ticker(each[0]))  # each[0] = symbol, each[1] = shortName
-            else:
-                pass
-        except FileNotFoundError:
-            print("Initializing Watchlist failed")
-            # If the file does not exist, initialize an empty list
+        if not self.checkWatchlist():
+            return
+
+        # Load existing data from the JSON file
+        with open(self.watchlistfile, 'r') as file:
+            data = json.load(file)
+
+        for each in data:
+            ticker = self.findTicker(each[0])  # each[0] = symbol, each[1] = shortName
+            if ticker:
+                self.add_stock_to_tickerlist(ticker)
 
     def findTicker(self,symbol) -> yf.Ticker:
-        # Update the start and end dates
-        if symbol:
-            ticker = yf.Ticker(symbol)
-            # check to verify if valid ticker was found by checking some info
+        if not symbol:
+            print("Symbol empty! Ticker couldnt be generated for this symbol!")
+            return None
+        ticker = yf.Ticker(symbol)
+        try:
             check = ticker.info['symbol']
-            #self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
-            self.tickerlist.append(symbol)
-            return ticker
+            check = ticker.info['shortName']
+            check = ticker.isin
+        except:
+            print("Tickerinfo about symbol, shortname and isin doesnt exist. Recheck entered symbol!")
+            return None
+        #self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
+        return ticker
+    
+    def add_stock_to_tickerlist(self,ticker):
+        self.tickerlist.append(ticker)
 
+    def remove_stock_from_tickerlist(self,ticker_symbol):
+        for ticker in self.tickerlist:
+            if ticker.info["symbol"] == ticker_symbol:
+                self.tickerlist.remove(ticker)
 
-    def add_stockticker_to_watchlist(self,ticker):
-        try:
-            data = []
-            if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
-                #TODO: check if file exists, otherwise create file
-                # Load existing data from the JSON file
-                with open(self.watchlistfile, 'r') as file:
-                    data = json.load(file)
-            else:
-                Path(self.watchlistfile).touch()
+    def add_stockticker_to_watchlistfile(self,ticker):
+        
+        if not self.checkWatchlist():
+            return
 
-            # extract each[0] (symbol) from each element in data, to check for duplicates
-            tmpdata = [each[0] for each in data]
+        # Load existing data from the JSON file
+        with open(self.watchlistfile, 'r') as file:
+            data = json.load(file)
 
-            # Add the new stock ticker entry
-            if not ticker.info["symbol"] in tmpdata:
-                data.append([ticker.info["symbol"], ticker.info["shortName"]])
-                #TODO: add stockticker to self.watchlist variable
-                # Save the updated data back to the JSON file
-                with open(self.watchlistfile, 'w') as file:
-                    json.dump(data, file, indent=4)
-                return 1    # return value controls if stockticker is duplicate in data
-            else:
-                return 0
-            
-        except FileNotFoundError:
-            print("watchlistfile not found. Couldnt add stock from watchlist!")
+        # Save the updated data back to the JSON file
+        data.append([ticker.info["symbol"], ticker.info["shortName"]])
+        with open(self.watchlistfile, 'w') as file:
+            json.dump(data, file, indent=4)
+    
+    def check_duplicates_in_watchlistfile(self,ticker):
+        # Load existing data from the JSON file
+        with open(self.watchlistfile, 'r') as file:
+            data = json.load(file)
+    
+        # extract each[0] (symbol) from each element in data, to check for duplicates
+        tmpdata = [each[0] for each in data]
+        if ticker.info["symbol"] in tmpdata:
+            print("Stock already exists in Watchlist!")
+            return True
+        else:
+            return False
 
-    def remove_stockticker_from_watchlist(self,symbol):
-        try:
-            if os.path.exists(self.watchlistfile) and os.path.getsize(self.watchlistfile)>0:
-                data = []
-                with open(self.watchlistfile, 'r') as file:
-                    data = json.load(file)
+    def remove_stockticker_from_watchlistfile(self,symbol):
 
-                # extract each[0] (symbol) from each element in data, to check for duplicates
-                tmpdata = [each[0] for each in data]
-                
-                for index,each in enumerate(tmpdata):
-                    if each == symbol:
-                        data.pop(index)
-                        #TODO: recheck removing from list while iterating through it, because of mutable/immutable objects!!!!!
-                with open(self.watchlistfile, 'w') as file:
-                    json.dump(data, file, indent=4)
+        check = self.checkWatchlist()
+        if not check:
+            return
 
-        except FileNotFoundError:
-            print("watchlistfile not found. Couldnt remove stock from watchlist!")
+        with open(self.watchlistfile, 'r') as file:
+            data = json.load(file)
+
+        # extract each[0] (symbol) from each element in data, to check for duplicates
+        tmpdata = [each[0] for each in data]
+        for index,each in enumerate(tmpdata):
+            if each == symbol:
+                data.pop(index)
+
+        with open(self.watchlistfile, 'w') as file:
+            json.dump(data, file, indent=4)
+
 
     def remove_method(self,index):
         #TODO: rework!

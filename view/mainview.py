@@ -3,6 +3,7 @@ from view.qt.mainframe import Ui_frame_main
 from model import Model
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QPlainTextEdit
+import yfinance as yf
 
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
@@ -23,7 +24,7 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     # init tableWidget based on self.model.tickerlist, which contains downloaded tickers from watchlist
     def init_tableWidget(self):
-        for index,each in enumerate(self.model.tickerlist):
+        for each in self.model.tickerlist:
             # Adding the data to tableWidget
             row_position = self.tableWidget.rowCount()
             self.tableWidget.insertRow(row_position)
@@ -43,26 +44,27 @@ class Mainview(QMainWindow, Ui_frame_main):
     # add statistical method to tableWidget_2 (analysislist)
     def handle_enter_press_plainTextEdit_3(self) -> list:
         input_text = self.get_plaintextedit_input(self.plainTextEdit_3)
-        if input_text:
-            try:
-                input_text_filtered = int(input_text)
-                self.plainTextEdit_3.clear()
+        if not input_text:
+            print("no inputtext entered for adding statistical method!")
+            return []
+        
+        try:
+            input_text_filtered = int(input_text)
+        except ValueError:
+            print("input value for adding statistical method is not an integer!")
+            return []
 
-                # Adding the data to tableWidget
-                row_position = self.tableWidget_2.rowCount()
-                self.tableWidget_2.insertRow(row_position)
-
-                statistical_method_value = QTableWidgetItem()
-                statistical_method_value.setData(Qt.EditRole, input_text_filtered)
-
-                self.tableWidget_2.setItem(row_position, 0, QTableWidgetItem("Moving Average"))
-                self.tableWidget_2.setItem(row_position, 1, statistical_method_value)
-
-                ret_statMethodName = self.tableWidget_2.item(row_position, 0).text()
-                ret_statMethodArgs = self.tableWidget_2.item(row_position, 1).text()
-                return [ret_statMethodName, ret_statMethodArgs]
-            except ValueError:
-                print("Input needs to be of type integer!")
+        self.plainTextEdit_3.clear()
+        # Adding the data to tableWidget
+        row_position = self.tableWidget_2.rowCount()
+        self.tableWidget_2.insertRow(row_position)
+        statistical_method_value = QTableWidgetItem()
+        statistical_method_value.setData(Qt.EditRole, input_text_filtered)
+        self.tableWidget_2.setItem(row_position, 0, QTableWidgetItem("Moving Average"))
+        self.tableWidget_2.setItem(row_position, 1, statistical_method_value)
+        ret_statMethodName = self.tableWidget_2.item(row_position, 0).text()
+        ret_statMethodArgs = self.tableWidget_2.item(row_position, 1).text()
+        return [ret_statMethodName, ret_statMethodArgs]
 
     # removes selected method from tablewidget_2
     def handle_delete_press_tableWidget_2(self):
@@ -75,30 +77,30 @@ class Mainview(QMainWindow, Ui_frame_main):
         return [statMethodName,statMethodArgs]
 
     # adds stockdata to tablewidget (watchlist)
-    def handle_enter_press_plainTextEdit(self,ticker):
+    def handle_enter_press_plainTextEdit(self,ticker: yf.Ticker):
         input_text = self.get_plaintextedit_input(self.plainTextEdit)
-        if input_text:
-            #data from model
-            short_name = ticker.info['shortName']
-            symbol = ticker.info['symbol']
-            isin = ticker.isin
-            # Clear the plainTextEdit
-            self.plainTextEdit.clear()
+        if not input_text:
+            print("no inputtext provided to add ticker")
+            return
+        
+        #get info from ticker object
+        short_name = ticker.info['shortName']
+        symbol = ticker.info['symbol']
+        isin = ticker.isin
 
-            # Adding the data to tableWidget
-            row_position = self.tableWidget.rowCount()
-            self.tableWidget.insertRow(row_position)
-
-            stockvalue = QTableWidgetItem()
-            stockvalue.setData(Qt.EditRole, 1234)
-            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(short_name))
-            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(symbol))
-            self.tableWidget.setItem(row_position, 2, QTableWidgetItem(isin))
-            self.tableWidget.setItem(row_position, 3, stockvalue)
-
-            analyze_checkbox = QCheckBox()
-            analyze_checkbox.setChecked(True)
-            self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
+        # Adding the data to tableWidget
+        self.plainTextEdit.clear()
+        row_position = self.tableWidget.rowCount()
+        self.tableWidget.insertRow(row_position)
+        stockvalue = QTableWidgetItem()
+        stockvalue.setData(Qt.EditRole, 1234)
+        self.tableWidget.setItem(row_position, 0, QTableWidgetItem(short_name))
+        self.tableWidget.setItem(row_position, 1, QTableWidgetItem(symbol))
+        self.tableWidget.setItem(row_position, 2, QTableWidgetItem(isin))
+        self.tableWidget.setItem(row_position, 3, stockvalue)
+        analyze_checkbox = QCheckBox()
+        analyze_checkbox.setChecked(True)
+        self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
 
     # removes selected stock from tablewidget
     def handle_delete_press_tableWidget(self):
@@ -117,16 +119,18 @@ class Mainview(QMainWindow, Ui_frame_main):
             stockname_item = self.tableWidget.item(row, 0)
             symbolname_item = self.tableWidget.item(row, 1)
 
-            if stockname_item is not None and symbolname_item is not None:
-                stockname = stockname_item.text().lower()
-                symbolname = symbolname_item.text().lower()
+            if stockname_item is None or symbolname_item is None:
+                print("stockname or symbolname == None!")
+                continue
 
-                if search_text in stockname or search_text in symbolname:
-                    self.tableWidget.setRowHidden(row, False)
-                else:
-                    self.tableWidget.setRowHidden(row, True)
+            stockname = stockname_item.text().lower()
+            symbolname = symbolname_item.text().lower()
+            if search_text in stockname or search_text in symbolname:
+                self.tableWidget.setRowHidden(row, False)
+            else:
+                self.tableWidget.setRowHidden(row, True)
                     
-        # function to get all selected checkboxes from watchlist, which shall be used for analysis and graph generation
+    # function to get all selected checkboxes from watchlist, which shall be used for analysis and graph generation
     def get_selected_Checkboxes(self) -> list:
         ret = []
         for row in range(self.tableWidget.rowCount()):

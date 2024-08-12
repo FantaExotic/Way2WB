@@ -9,7 +9,8 @@ def main() -> None:
     app = QApplication()
     model = Model()
     view = Mainview(model)
-    controller = Controller(model,view,app)
+    graphicview = Graphicview(model,view)
+    controller = Controller(model,view,app,graphicview)
     controller.run()
 
 if __name__ == "__main__":
