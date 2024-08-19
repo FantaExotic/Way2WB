@@ -1,14 +1,22 @@
 [
     [
-        "AL",
-        "Air Lease Corporation"
-    ],
-    [
         "AAPL",
         "Apple Inc."
     ],
     [
+        "AMZN",
+        "Amazon.com, Inc."
+    ],
+    [
+        "DTE.DE",
+        "DT.TELEKOM AG NA"
+    ],
+    [
         "GOOG",
         "Alphabet Inc."
+    ],
+    [
+        "MSFT",
+        "Microsoft Corporation"
     ]
 ]

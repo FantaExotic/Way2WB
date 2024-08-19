@@ -4,6 +4,8 @@ from model import Model
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QPlainTextEdit
 import yfinance as yf
+from tickerwrapper import TickerWrapper
+from helpfunctions import *
 
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
@@ -19,7 +21,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.comboBox.addItem("Moving Average")
     
     def init_intervals(self):
-        for key,value in self.model.valid_periods.items():
+        for key,value in valid_periods.items():
             self.comboBox_2.addItem(value)
 
     # init tableWidget based on self.model.tickerlist, which contains downloaded tickers from watchlist
@@ -31,15 +33,27 @@ class Mainview(QMainWindow, Ui_frame_main):
 
             stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
             stockvalue.setData(Qt.EditRole, 1234)
-            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(each.info["shortName"]))
-            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(each.info["symbol"]))
-            self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
+            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(each.ticker.info["shortName"]))
+            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(each.ticker.info["symbol"]))
+            #self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
+            self.tableWidget.setItem(row_position, 2, QTableWidgetItem("default ISIN"))
             self.tableWidget.setItem(row_position, 3, stockvalue)
             
             # checkbox for analysis
             analyze_checkbox = QCheckBox()
             analyze_checkbox.setChecked(True)
             self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
+
+    def handle_updateTickervalue(self, interval: str):
+        for row in range(self.tableWidget.rowCount()):
+            for tickerwrapper in self.model.tickerlist:
+                if tickerwrapper.ticker.info["symbol"] == self.tableWidget.item(row,1).text():
+                    openprice = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
+                    stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
+                    stockvalue.setData(Qt.EditRole, openprice)
+                    self.tableWidget.setItem(row, 3, stockvalue)
+                    #TODO: get data for selected period and compare to current tickervalue!
+                    #TODO: iterate through rows in tableWidget instead!
 
     # add statistical method to tableWidget_2 (analysislist)
     def handle_enter_press_plainTextEdit_3(self) -> list:
@@ -77,16 +91,16 @@ class Mainview(QMainWindow, Ui_frame_main):
         return [statMethodName,statMethodArgs]
 
     # adds stockdata to tablewidget (watchlist)
-    def handle_enter_press_plainTextEdit(self,ticker: yf.Ticker):
+    def handle_enter_press_plainTextEdit(self,tickerwrapper: TickerWrapper):
         input_text = self.get_plaintextedit_input(self.plainTextEdit)
         if not input_text:
             print("no inputtext provided to add ticker")
             return
         
         #get info from ticker object
-        short_name = ticker.info['shortName']
-        symbol = ticker.info['symbol']
-        isin = ticker.isin
+        short_name = tickerwrapper.ticker.info['shortName']
+        symbol = tickerwrapper.ticker.info['symbol']
+        isin = tickerwrapper.ticker.isin
 
         # Adding the data to tableWidget
         self.plainTextEdit.clear()
@@ -96,7 +110,8 @@ class Mainview(QMainWindow, Ui_frame_main):
         stockvalue.setData(Qt.EditRole, 1234)
         self.tableWidget.setItem(row_position, 0, QTableWidgetItem(short_name))
         self.tableWidget.setItem(row_position, 1, QTableWidgetItem(symbol))
-        self.tableWidget.setItem(row_position, 2, QTableWidgetItem(isin))
+        #self.tableWidget.setItem(row_position, 2, QTableWidgetItem(isin))
+        self.tableWidget.setItem(row_position, 2, QTableWidgetItem("default ISIN"))
         self.tableWidget.setItem(row_position, 3, stockvalue)
         analyze_checkbox = QCheckBox()
         analyze_checkbox.setChecked(True)

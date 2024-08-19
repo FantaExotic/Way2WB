@@ -4,6 +4,7 @@ from view.graphicview import Graphicview
 from PySide6.QtWidgets import QApplication, QTableWidgetItem, QCheckBox
 from PySide6.QtCore import Qt, QEvent, QObject
 from helpfunctions import *
+from tickerwrapper import TickerWrapper
 
 class Controller(QObject):
     def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
@@ -20,23 +21,36 @@ class Controller(QObject):
         self.view.tableWidget.installEventFilter(self)
         self.view.tableWidget_2.installEventFilter(self)
         self.view.button_genGraph.installEventFilter(self)
+        self.view.comboBox_2.currentTextChanged.connect(self.eventHandler_comboBox_2)
 
     def run(self) -> None:
         self.view.show()
         self.app.exec()
 
+    # different apporach needed than eventFilter, because multiple clicks are required to change value of combobox_2
+    def eventHandler_comboBox_2(self):
+        period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods)
+        interval = setTickerArgs(period)
+        #first iteration needed to check if history for this specific period exists
+        for tickerwrapper in self.model.tickerlist:
+            if not tickerwrapper.checkTickerHistory(period = period):
+                tickerwrapper.setTickerHistory(period)
+        self.view.handle_updateTickervalue(interval)
+
+        print("event handler works")
+
     def eventFilter(self, source, event):
         #eventhandler for pressing enter in plainTextEdit to add symbol to watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.view.plainTextEdit:
-                ticker = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit))
-                if not ticker:
+                tickerwrapper = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit))
+                if not tickerwrapper.ticker:
                     return True
-                if self.model.check_duplicates_in_watchlistfile(ticker):
+                if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
                     return True
-                self.model.add_stockticker_to_watchlistfile(ticker) # bool_addToWatchlist 1 if symbol shall be added, else 0
-                self.model.add_stock_to_tickerlist(ticker)
-                self.view.handle_enter_press_plainTextEdit(ticker)
+                self.model.add_stockticker_to_watchlistfile(tickerwrapper) # bool_addToWatchlist 1 if symbol shall be added, else 0
+                self.model.add_stock_to_tickerlist(tickerwrapper)
+                self.view.handle_enter_press_plainTextEdit(tickerwrapper)
                 return True
 
         #eventhandler for pressing delete in tableWidget to remove symbol from watchlist
@@ -70,9 +84,7 @@ class Controller(QObject):
                 #TODO: integrate graphicview to mainview!
                 selected_stocks = self.view.get_selected_Checkboxes()
                 # get optimal period/interval pairing to get maximum data based on selected period
-                period = get_keyFromDictValue(self.view.comboBox_2.currentText(), self.model.valid_periods) # helpfunction needed to get key from value and dict
-                interval = self.model.setTickerArgs(period) 
-                self.graphicview.initstaticGraph(selected_stocks, period, interval)
+                period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods) # helpfunction needed to get key from value and dict
+                self.graphicview.initstaticGraph(selected_stocks, period)
                 return True
-
         return super().eventFilter(source, event)
