@@ -38,7 +38,7 @@ class Controller(QObject):
             self.yliveticker_worker.stop()
         if self.yliveticker_thread:
             self.yliveticker_thread.quit()
-            self.yliveticker_thread.wait()
+            #self.yliveticker_thread.wait()
 
     def initLiveticker(self) -> None:
         # Create a QThread for the live ticker
@@ -72,7 +72,10 @@ class Controller(QObject):
         #eventhandler for pressing enter in plainTextEdit to add symbol to watchlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.view.plainTextEdit:
-                tickerwrapper = self.model.findTicker(self.view.get_plaintextedit_input(self.view.plainTextEdit))
+                input = self.view.get_plaintextedit_input(self.view.plainTextEdit)
+                if not input:
+                    return True
+                tickerwrapper = self.model.findTicker(input)
                 if not tickerwrapper.ticker:
                     return True
                 if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
@@ -80,7 +83,9 @@ class Controller(QObject):
                 self.model.add_stockticker_to_watchlistfile(tickerwrapper) # bool_addToWatchlist 1 if symbol shall be added, else 0
                 self.model.add_stock_to_tickerlist(tickerwrapper)
                 self.view.handle_enter_press_plainTextEdit(tickerwrapper)
+                self.stopLiveticker()
                 self.eventHandler_comboBox_2()
+                self.initLiveticker()
                 return True
 
         #eventhandler for pressing delete in tableWidget to remove symbol from watchlist
