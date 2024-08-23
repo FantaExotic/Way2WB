@@ -2,9 +2,11 @@ from model import Model
 from view.mainview import Mainview
 from view.graphicview import Graphicview
 from PySide6.QtWidgets import QApplication, QTableWidgetItem, QCheckBox
-from PySide6.QtCore import Qt, QEvent, QObject
+from PySide6.QtCore import Qt, QEvent, QObject, QThread
 from helpfunctions import *
 from tickerwrapper import TickerWrapper
+import threading
+from ylivetickerWrapper import YLiveTickerWorker
 
 class Controller(QObject):
     def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
@@ -13,6 +15,9 @@ class Controller(QObject):
         self.view = view
         self.app = app
         self.graphicview = graphicview
+
+        # init thread for yliveticker
+        self.initLiveticker()
 
         # Install event filter for plainTextEdit
         self.view.plainTextEdit.installEventFilter(self)
@@ -27,6 +32,31 @@ class Controller(QObject):
         self.view.show()
         self.app.exec()
 
+    # not used yet, in case yliveticker thread and worker need to be stopped
+    def stopLiveticker(self):
+        if self.yliveticker_worker:
+            self.yliveticker_worker.stop()
+        if self.yliveticker_thread:
+            self.yliveticker_thread.quit()
+            self.yliveticker_thread.wait()
+
+    def initLiveticker(self) -> None:
+        # Create a QThread for the live ticker
+        self.yliveticker_thread = QThread()
+        self.yliveticker_worker = YLiveTickerWorker(ticker_names=[tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerlist])
+        self.yliveticker_worker.moveToThread(self.yliveticker_thread)
+        # Connect signals
+        self.yliveticker_worker.ticker_updated.connect(self.event_liveticker_update)
+        self.yliveticker_thread.started.connect(self.yliveticker_worker.run)
+        # Start the thread
+        self.yliveticker_thread.start()
+
+    def event_liveticker_update(self, msg):
+        period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods)
+        interval = setTickerArgs(period)
+        self.model.handle_liveticker_update(msg)
+        self.view.handle_updateTickervalue(interval) # only update history for timeinterval '1m'
+
     # different apporach needed than eventFilter, because multiple clicks are required to change value of combobox_2
     def eventHandler_comboBox_2(self):
         period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods)
@@ -36,7 +66,6 @@ class Controller(QObject):
             if not tickerwrapper.checkTickerHistory(period = period):
                 tickerwrapper.setTickerHistory(period)
         self.view.handle_updateTickervalue(interval)
-
         print("event handler works")
 
     def eventFilter(self, source, event):
@@ -51,6 +80,7 @@ class Controller(QObject):
                 self.model.add_stockticker_to_watchlistfile(tickerwrapper) # bool_addToWatchlist 1 if symbol shall be added, else 0
                 self.model.add_stock_to_tickerlist(tickerwrapper)
                 self.view.handle_enter_press_plainTextEdit(tickerwrapper)
+                self.eventHandler_comboBox_2()
                 return True
 
         #eventhandler for pressing delete in tableWidget to remove symbol from watchlist

@@ -26,32 +26,55 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     # init tableWidget based on self.model.tickerlist, which contains downloaded tickers from watchlist
     def init_tableWidget(self):
-        for each in self.model.tickerlist:
+        for tickerwrapper in self.model.tickerlist:
             # Adding the data to tableWidget
             row_position = self.tableWidget.rowCount()
             self.tableWidget.insertRow(row_position)
 
+            period = get_keyFromDictValue(self.comboBox_2.currentText(), valid_periods)
+            interval = setTickerArgs(period)
+            #TODO: get data for period '1d' before doing this!
+            lastDataframeIndex = tickerwrapper.tickerhistory[interval].shape[0]-1
+
+            openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()  #TODO: Interval '1m' hardcoded, need to get this from view instead
             stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
-            stockvalue.setData(Qt.EditRole, 1234)
-            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(each.ticker.info["shortName"]))
-            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(each.ticker.info["symbol"]))
+            stockvalue.setData(Qt.EditRole, openprice)
+            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(tickerwrapper.ticker.info["shortName"]))
+            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(tickerwrapper.ticker.info["symbol"]))
             #self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
             self.tableWidget.setItem(row_position, 2, QTableWidgetItem("default ISIN"))
             self.tableWidget.setItem(row_position, 3, stockvalue)
             
+            #index 0 because we want difference to start of interval (e.g. start of month instead end of month)
+            stockdiff = QTableWidgetItem()
+            delta_start = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
+            delta_end = openprice
+            delta = delta_end/delta_start * 100 - 100
+            stockdiff.setData(Qt.EditRole, delta)
+            self.tableWidget.setItem(row_position, 4, stockdiff)
+
             # checkbox for analysis
             analyze_checkbox = QCheckBox()
             analyze_checkbox.setChecked(True)
-            self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
+            self.tableWidget.setCellWidget(row_position, 5, analyze_checkbox)
 
     def handle_updateTickervalue(self, interval: str):
         for row in range(self.tableWidget.rowCount()):
             for tickerwrapper in self.model.tickerlist:
                 if tickerwrapper.ticker.info["symbol"] == self.tableWidget.item(row,1).text():
-                    openprice = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
+                    lastDataframeIndex = tickerwrapper.tickerhistory['1m'].shape[0]-1
+                    openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
                     stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
                     stockvalue.setData(Qt.EditRole, openprice)
                     self.tableWidget.setItem(row, 3, stockvalue)
+
+                    #index 0 because we want difference to start of interval (e.g. start of month instead end of month)
+                    stockdiff = QTableWidgetItem()
+                    delta_start = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
+                    delta_end = openprice
+                    delta = delta_end/delta_start * 100 - 100
+                    stockdiff.setData(Qt.EditRole, delta)
+                    self.tableWidget.setItem(row, 4, stockdiff)
                     #TODO: get data for selected period and compare to current tickervalue!
                     #TODO: iterate through rows in tableWidget instead!
 
@@ -115,7 +138,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.tableWidget.setItem(row_position, 3, stockvalue)
         analyze_checkbox = QCheckBox()
         analyze_checkbox.setChecked(True)
-        self.tableWidget.setCellWidget(row_position, 4, analyze_checkbox)
+        self.tableWidget.setCellWidget(row_position, 5, analyze_checkbox)
 
     # removes selected stock from tablewidget
     def handle_delete_press_tableWidget(self):
@@ -151,7 +174,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         for row in range(self.tableWidget.rowCount()):
             #TODO: use variables here to determine which column
             symbol = self.tableWidget.item(row, 1).text()
-            checkbox = self.tableWidget.cellWidget(row, 4)
+            checkbox = self.tableWidget.cellWidget(row, 5)
             if checkbox.isChecked():
                 ret.append(symbol)
         return ret

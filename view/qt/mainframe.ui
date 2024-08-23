@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_watchlist">
      <attribute name="title">
@@ -72,7 +72,12 @@
       </column>
       <column>
        <property name="text">
-        <string>Value</string>
+        <string>Current Value</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Delta</string>
        </property>
       </column>
       <column>

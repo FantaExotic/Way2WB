@@ -36,8 +36,8 @@ class Ui_frame_main(object):
         self.tab_watchlist = QWidget()
         self.tab_watchlist.setObjectName(u"tab_watchlist")
         self.tableWidget = QTableWidget(self.tab_watchlist)
-        if (self.tableWidget.columnCount() < 5):
-            self.tableWidget.setColumnCount(5)
+        if (self.tableWidget.columnCount() < 6):
+            self.tableWidget.setColumnCount(6)
         __qtablewidgetitem = QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
@@ -48,6 +48,8 @@ class Ui_frame_main(object):
         self.tableWidget.setHorizontalHeaderItem(3, __qtablewidgetitem3)
         __qtablewidgetitem4 = QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(4, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(5, __qtablewidgetitem5)
         self.tableWidget.setObjectName(u"tableWidget")
         self.tableWidget.setGeometry(QRect(20, 30, 701, 591))
         self.tableWidget.setSortingEnabled(True)
@@ -57,10 +59,10 @@ class Ui_frame_main(object):
         self.tableWidget_2 = QTableWidget(self.tab_analysis)
         if (self.tableWidget_2.columnCount() < 2):
             self.tableWidget_2.setColumnCount(2)
-        __qtablewidgetitem5 = QTableWidgetItem()
-        self.tableWidget_2.setHorizontalHeaderItem(0, __qtablewidgetitem5)
         __qtablewidgetitem6 = QTableWidgetItem()
-        self.tableWidget_2.setHorizontalHeaderItem(1, __qtablewidgetitem6)
+        self.tableWidget_2.setHorizontalHeaderItem(0, __qtablewidgetitem6)
+        __qtablewidgetitem7 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(1, __qtablewidgetitem7)
         self.tableWidget_2.setObjectName(u"tableWidget_2")
         self.tableWidget_2.setGeometry(QRect(50, 50, 471, 531))
         self.comboBox = QComboBox(self.tab_analysis)
@@ -121,14 +123,16 @@ class Ui_frame_main(object):
         ___qtablewidgetitem2 = self.tableWidget.horizontalHeaderItem(2)
         ___qtablewidgetitem2.setText(QCoreApplication.translate("frame_main", u"ISIN", None));
         ___qtablewidgetitem3 = self.tableWidget.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("frame_main", u"Value", None));
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("frame_main", u"Current Value", None));
         ___qtablewidgetitem4 = self.tableWidget.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("frame_main", u"Analyze", None));
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("frame_main", u"Delta", None));
+        ___qtablewidgetitem5 = self.tableWidget.horizontalHeaderItem(5)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("frame_main", u"Analyze", None));
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_watchlist), QCoreApplication.translate("frame_main", u"Configure Watchlist", None))
-        ___qtablewidgetitem5 = self.tableWidget_2.horizontalHeaderItem(0)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("frame_main", u"Statistical Method", None));
-        ___qtablewidgetitem6 = self.tableWidget_2.horizontalHeaderItem(1)
-        ___qtablewidgetitem6.setText(QCoreApplication.translate("frame_main", u"Value", None));
+        ___qtablewidgetitem6 = self.tableWidget_2.horizontalHeaderItem(0)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("frame_main", u"Statistical Method", None));
+        ___qtablewidgetitem7 = self.tableWidget_2.horizontalHeaderItem(1)
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("frame_main", u"Value", None));
         self.label_3.setText(QCoreApplication.translate("frame_main", u"Statistical Method", None))
         self.label_4.setText(QCoreApplication.translate("frame_main", u"Input value", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_analysis), QCoreApplication.translate("frame_main", u"Configure Analysis", None))

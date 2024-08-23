@@ -3,6 +3,11 @@ import json
 from pathlib import Path
 import os
 from tickerwrapper import TickerWrapper
+import yliveticker as ylt
+from helpfunctions import *
+import numpy as np
+import pandas as pd
+from datetime import datetime, timezone
 
 class Model:
     def __init__(self):
@@ -11,7 +16,41 @@ class Model:
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
         self.methods = []
         self.movingaverage_symbol = "MA"
+        #self.yliveticker = None
         self.initWatchlist()
+        self.initTickerhistory()
+
+    def handle_liveticker_update(self, msg):
+        # Update ticker data here based on the received message
+        for index,tickerwrapper in enumerate(self.tickerlist):
+            if tickerwrapper.ticker.info['symbol'] == msg['id']:
+                #price = msg['price']
+                price = msg['price']
+                timestamp_ms = msg['timestamp']
+                timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
+                dayVolume = msg['dayVolume']
+                new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [dayVolume], 'Dividends': [222]}  # Replace with your new data
+
+                # Convert new_value to a DataFrame with the appropriate index
+                new_data = pd.DataFrame(new_value)
+                new_data.index = pd.to_datetime([timestamp_s], unit="s")
+
+                if new_data.index.tz is None:
+                    new_data.index = new_data.index.tz_localize("UTC")
+                new_data.index = new_data.index.tz_convert(tickerwrapper.ticker._tz)
+                new_data.index.name = tickerwrapper.tickerhistory['1m'].index.name
+
+                # Update the existing tickerhistory['1m'] DataFrame with the new data
+                new_dataframe = pd.concat([self.tickerlist[index].tickerhistory['1m'],new_data])
+                self.tickerlist[index].tickerhistory['1m'] = new_dataframe
+                #TODO fix updating properties values and index (they are no attributes!)
+
+    def initTickerhistory(self):
+        period = "1d" #hardcoded, better to get this default value from view
+        interval = setTickerArgs(period)
+        for tickerwrapper in self.tickerlist:
+            if not tickerwrapper.checkTickerHistory(period = period):
+                tickerwrapper.setTickerHistory(period)
 
     def initWatchlist(self) -> None:
         if not self.checkWatchlist():

@@ -1,9 +1,5 @@
 [
     [
-        "AAPL",
-        "Apple Inc."
-    ],
-    [
         "AMZN",
         "Amazon.com, Inc."
     ],
@@ -12,11 +8,27 @@
         "DT.TELEKOM AG NA"
     ],
     [
-        "GOOG",
-        "Alphabet Inc."
-    ],
-    [
         "MSFT",
         "Microsoft Corporation"
+    ],
+    [
+        "AAPL",
+        "Apple Inc."
+    ],
+    [
+        "TSLA",
+        "Tesla, Inc."
+    ],
+    [
+        "BTC-USD",
+        "Bitcoin USD"
+    ],
+    [
+        "META",
+        "Meta Platforms, Inc."
+    ],
+    [
+        "GOOG",
+        "Alphabet Inc."
     ]
 ]
