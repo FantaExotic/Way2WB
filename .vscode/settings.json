@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/README.md": true,
+        "**/.gitignore": true,
+        "**/way2warrenbuffett.bat": true
+    }
+}

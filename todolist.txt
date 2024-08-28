@@ -1,0 +1,18 @@
+adapt range e.g. for 1 year, so that it doesnt use 2 years, which was assigned based on interval!
+
+add try block when downloading history for bigger period (e.g. 10 years), to check if this range even exists for this stock
+-> done, fixed by downloading history for period max for selected interval
+
+use same colors for stock, MA of stock and all other methods of the stock (depetable...)
+
+$AME: possibly delisted; No price data found  (period=1d). No data for period 1d found for Ametek!
+
+add check self.model.verify_ticker_valid() to init, to prevent invalid ticker in case of rename or remove
+
+change tickerlist, dont iterate through it as list object, because the method and attributes dont get
+displayed with corresponding color. Doesnt look good, get better solution!
+
+change objecttype of combobox_2 value, period and interval! Maybe Objectclasses?#
+
+if controller.py l64, if period = period, then adding new stocks while period=1 year in combobox is set,
+raises errors. if period = '1d', delta doesnt update anymore if combobox value is different than '1d'

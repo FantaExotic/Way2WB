@@ -1,11 +1,20 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QCheckBox
 from view.qt.mainframe import Ui_frame_main
-from model import Model
+from model.model import Model
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QPlainTextEdit
 import yfinance as yf
-from tickerwrapper import TickerWrapper
-from helpfunctions import *
+from model.tickerwrapper import TickerWrapper
+from utils.helpfunctions import *
+from enum import Enum
+
+class TableRow(Enum):
+    SHORTNAME = 0
+    SYMBOLNAME = 1
+    ISIN = 2
+    CURRENTVALUE = 3
+    DELTAVALUE = 4
+    CHECKBOX = 5
 
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
@@ -39,11 +48,11 @@ class Mainview(QMainWindow, Ui_frame_main):
             openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()  #TODO: Interval '1m' hardcoded, need to get this from view instead
             stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
             stockvalue.setData(Qt.EditRole, openprice)
-            self.tableWidget.setItem(row_position, 0, QTableWidgetItem(tickerwrapper.ticker.info["shortName"]))
-            self.tableWidget.setItem(row_position, 1, QTableWidgetItem(tickerwrapper.ticker.info["symbol"]))
+            self.tableWidget.setItem(row_position, TableRow.SHORTNAME.value, QTableWidgetItem(tickerwrapper.ticker.info["shortName"]))
+            self.tableWidget.setItem(row_position, TableRow.SYMBOLNAME.value, QTableWidgetItem(tickerwrapper.ticker.info["symbol"]))
             #self.tableWidget.setItem(row_position, 2, QTableWidgetItem(each.isin))
-            self.tableWidget.setItem(row_position, 2, QTableWidgetItem("default ISIN"))
-            self.tableWidget.setItem(row_position, 3, stockvalue)
+            self.tableWidget.setItem(row_position, TableRow.ISIN.value, QTableWidgetItem("default ISIN"))
+            self.tableWidget.setItem(row_position, TableRow.CURRENTVALUE.value, stockvalue)
             
             #index 0 because we want difference to start of interval (e.g. start of month instead end of month)
             stockdiff = QTableWidgetItem()
@@ -51,14 +60,15 @@ class Mainview(QMainWindow, Ui_frame_main):
             delta_end = openprice
             delta = delta_end/delta_start * 100 - 100
             stockdiff.setData(Qt.EditRole, delta)
-            self.tableWidget.setItem(row_position, 4, stockdiff)
+            self.tableWidget.setItem(row_position, TableRow.DELTAVALUE.value, stockdiff)
 
             # checkbox for analysis
             analyze_checkbox = QCheckBox()
             analyze_checkbox.setChecked(True)
-            self.tableWidget.setCellWidget(row_position, 5, analyze_checkbox)
+            self.tableWidget.setCellWidget(row_position, TableRow.CHECKBOX.value, analyze_checkbox)
 
-    def handle_updateTickervalue(self, interval: str):
+    def handle_updateTickervalue(self, period: str):
+        interval = setTickerArgs(period)
         for row in range(self.tableWidget.rowCount()):
             for tickerwrapper in self.model.tickerlist:
                 if tickerwrapper.ticker.info["symbol"] == self.tableWidget.item(row,1).text():
@@ -66,15 +76,19 @@ class Mainview(QMainWindow, Ui_frame_main):
                     openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
                     stockvalue = QTableWidgetItem() # very inefficient!!! Fix it!
                     stockvalue.setData(Qt.EditRole, openprice)
-                    self.tableWidget.setItem(row, 3, stockvalue)
+                    self.tableWidget.setItem(row, TableRow.CURRENTVALUE.value, stockvalue)
 
                     #index 0 because we want difference to start of interval (e.g. start of month instead end of month)
                     stockdiff = QTableWidgetItem()
-                    delta_start = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
-                    delta_end = openprice
-                    delta = delta_end/delta_start * 100 - 100
-                    stockdiff.setData(Qt.EditRole, delta)
-                    self.tableWidget.setItem(row, 4, stockdiff)
+                    try:
+                        delta_start = tickerwrapper.tickerhistory[interval]['Open'].values[0].item()
+                        delta_end = openprice
+                        delta = delta_end/delta_start * 100 - 100
+                        stockdiff.setData(Qt.EditRole, delta)
+                        self.tableWidget.setItem(row, TableRow.DELTAVALUE.value, stockdiff)
+                    except:
+                        print(f'Stockdata for {tickerwrapper.ticker.info["symbol"]} doesnt exist for this period! Select a shorted period!')
+                        self.tableWidget.setItem(row, TableRow.DELTAVALUE.value, None)
                     #TODO: get data for selected period and compare to current tickervalue!
                     #TODO: iterate through rows in tableWidget instead!
 
@@ -91,7 +105,6 @@ class Mainview(QMainWindow, Ui_frame_main):
             print("input value for adding statistical method is not an integer!")
             return []
 
-        self.plainTextEdit_3.clear()
         # Adding the data to tableWidget
         row_position = self.tableWidget_2.rowCount()
         self.tableWidget_2.insertRow(row_position)
@@ -126,7 +139,6 @@ class Mainview(QMainWindow, Ui_frame_main):
         isin = tickerwrapper.ticker.isin
 
         # Adding the data to tableWidget
-        self.plainTextEdit.clear()
         row_position = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_position)
         stockvalue = QTableWidgetItem()
@@ -145,7 +157,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         # Get the selected row
         selected_row = self.tableWidget.currentRow()
         # TODO: add variable for columnposition of symbol, shortname, isin, etc.
-        removedSymbol = self.tableWidget.item(selected_row,1).text()
+        removedSymbol = self.tableWidget.item(selected_row,TableRow.SYMBOLNAME.value).text()
         self.tableWidget.removeRow(selected_row)
         return removedSymbol
 
@@ -154,8 +166,8 @@ class Mainview(QMainWindow, Ui_frame_main):
         search_text = self.get_plaintextedit_input(self.plainTextEdit_2)
 
         for row in range(self.tableWidget.rowCount()):
-            stockname_item = self.tableWidget.item(row, 0)
-            symbolname_item = self.tableWidget.item(row, 1)
+            stockname_item = self.tableWidget.item(row, TableRow.SHORTNAME.value)
+            symbolname_item = self.tableWidget.item(row, TableRow.SYMBOLNAME.value)
 
             if stockname_item is None or symbolname_item is None:
                 print("stockname or symbolname == None!")
@@ -173,8 +185,8 @@ class Mainview(QMainWindow, Ui_frame_main):
         ret = []
         for row in range(self.tableWidget.rowCount()):
             #TODO: use variables here to determine which column
-            symbol = self.tableWidget.item(row, 1).text()
-            checkbox = self.tableWidget.cellWidget(row, 5)
+            symbol = self.tableWidget.item(row, TableRow.SYMBOLNAME.value).text()
+            checkbox = self.tableWidget.cellWidget(row, TableRow.CHECKBOX.value)
             if checkbox.isChecked():
                 ret.append(symbol)
         return ret
@@ -190,3 +202,6 @@ class Mainview(QMainWindow, Ui_frame_main):
     def get_plaintextedit_input(self, qPlainTextEdit: QPlainTextEdit):
         ret = qPlainTextEdit.toPlainText().strip()
         return ret
+
+    def clear_input_field(self, qPlainTextEdit: QPlainTextEdit):
+         qPlainTextEdit.clear()

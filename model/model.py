@@ -2,9 +2,9 @@ import yfinance as yf
 import json
 from pathlib import Path
 import os
-from tickerwrapper import TickerWrapper
+from model.tickerwrapper import TickerWrapper
 import yliveticker as ylt
-from helpfunctions import *
+from utils.helpfunctions import *
 import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
@@ -18,7 +18,7 @@ class Model:
         self.movingaverage_symbol = "MA"
         #self.yliveticker = None
         self.initWatchlist()
-        self.initTickerhistory()
+        self.update_tickerhistory(period='1d', verify_period=False)
 
     def handle_liveticker_update(self, msg):
         # Update ticker data here based on the received message
@@ -44,13 +44,6 @@ class Model:
                 new_dataframe = pd.concat([self.tickerlist[index].tickerhistory['1m'],new_data])
                 self.tickerlist[index].tickerhistory['1m'] = new_dataframe
                 #TODO fix updating properties values and index (they are no attributes!)
-
-    def initTickerhistory(self):
-        period = "1d" #hardcoded, better to get this default value from view
-        interval = setTickerArgs(period)
-        for tickerwrapper in self.tickerlist:
-            if not tickerwrapper.checkTickerHistory(period = period):
-                tickerwrapper.setTickerHistory(period)
 
     def initWatchlist(self) -> None:
         if not self.checkWatchlist():
@@ -92,20 +85,24 @@ class Model:
             return False
 
     def findTicker(self,symbol: str) -> TickerWrapper:
-        if not symbol:
-            print("Symbol empty! Ticker couldnt be generated for this symbol!")
-            return None
         tickerwrapper = TickerWrapper(yf.Ticker(symbol))
-        try:
-            check = tickerwrapper.ticker.info['symbol']
-            check = tickerwrapper.ticker.info['shortName']
-            #check = ticker.isin
-        except:
-            print("Tickerinfo about symbol, shortname and isin doesnt exist. Recheck entered symbol!")
-            return None
-        #self.symbol_info_label.config(text=f"Stock Symbol found: True\nShortname: {short_name}\nSymbol: {symbol}\nISIN: {isin}")
         return tickerwrapper
-    
+
+    def update_tickerhistory(self,period: str, verify_period: bool):
+        """Updates tickerhistory for predefined period with verifying if 
+        period range is valid and optionally by optimizing interval"""
+        interval = setTickerArgs(period)
+        for tickerwrapper in self.tickerlist:
+            if tickerwrapper.verify_tickerhistory_exists(period = period):
+                continue
+            if not verify_period:
+                tickerwrapper.set_tickerhistory(period, interval)
+                continue
+            if not tickerwrapper.verify_period_valid(period = period):
+                period = 'max'
+                interval = setTickerArgs(period)
+            tickerwrapper.set_tickerhistory(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
+
     def add_stock_to_tickerlist(self,tickerwrapper: TickerWrapper) -> None:
         self.tickerlist.append(tickerwrapper)
 
@@ -127,7 +124,7 @@ class Model:
         data.append([tickerwrapper.ticker.info["symbol"], tickerwrapper.ticker.info["shortName"]])
         with open(self.watchlistfile, 'w') as file:
             json.dump(data, file, indent=4)
-    
+
     def check_duplicates_in_watchlistfile(self,tickerwrapper: TickerWrapper) -> bool:
         # Load existing data from the JSON file
         with open(self.watchlistfile, 'r') as file:

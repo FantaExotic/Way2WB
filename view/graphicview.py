@@ -1,11 +1,11 @@
-from model import Model
+from model.model import Model
 import matplotlib.pyplot as plt
 from view.mainview import Mainview
 import pandas as pd
 import numpy as np
 import yfinance as yf
 from datetime import datetime,  timedelta
-from tickerwrapper import TickerWrapper
+from model.tickerwrapper import TickerWrapper
 
 class Graphicview:
     def __init__(self, model, mainview):
@@ -18,7 +18,7 @@ class Graphicview:
             if not tickerwrapper.ticker.info["symbol"] in symbollist:
                 #print("stocksymbol not in selected list for analysis")
                 continue
-            tickerhistory = tickerwrapper.getTickerHistory(period = period)
+            tickerhistory = tickerwrapper.get_tickerhistory(period = period)
             #tickerhistory = tickerwrapper.ticker.history(period = period, interval = interval, prepost=True)
             tickerhistory['Close'].plot(label=f'{tickerwrapper.ticker.info["shortName"]}')
             if len(self.model.methods) == 0:

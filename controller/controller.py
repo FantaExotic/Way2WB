@@ -1,12 +1,11 @@
-from model import Model
+from model.model import Model
 from view.mainview import Mainview
 from view.graphicview import Graphicview
 from PySide6.QtWidgets import QApplication, QTableWidgetItem, QCheckBox
 from PySide6.QtCore import Qt, QEvent, QObject, QThread
-from helpfunctions import *
-from tickerwrapper import TickerWrapper
-import threading
-from ylivetickerWrapper import YLiveTickerWorker
+from utils.helpfunctions import *
+from model.tickerwrapper import TickerWrapper
+from model.ylivetickerWrapper import YLiveTickerWorker
 
 class Controller(QObject):
     def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
@@ -53,20 +52,18 @@ class Controller(QObject):
 
     def event_liveticker_update(self, msg):
         period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods)
-        interval = setTickerArgs(period)
         self.model.handle_liveticker_update(msg)
-        self.view.handle_updateTickervalue(interval) # only update history for timeinterval '1m'
+        self.view.handle_updateTickervalue(period) # only update history for timeinterval '1m'
 
     # different apporach needed than eventFilter, because multiple clicks are required to change value of combobox_2
     def eventHandler_comboBox_2(self):
         period = get_keyFromDictValue(self.view.comboBox_2.currentText(), valid_periods)
-        interval = setTickerArgs(period)
-        #first iteration needed to check if history for this specific period exists
-        for tickerwrapper in self.model.tickerlist:
-            if not tickerwrapper.checkTickerHistory(period = period):
-                tickerwrapper.setTickerHistory(period)
-        self.view.handle_updateTickervalue(interval)
-        print("event handler works")
+        self.model.update_tickerhistory(period='1d', verify_period=False)
+        # second tickerhistory update needed after history for period '1d' was downloaded.
+        # because we need access to valid_periods dict in ticker, which only gets initialized 
+        # after downloading a ticker history
+        self.model.update_tickerhistory(period=period, verify_period=True)
+        self.view.handle_updateTickervalue(period)
 
     def eventFilter(self, source, event):
         #eventhandler for pressing enter in plainTextEdit to add symbol to watchlist
@@ -74,15 +71,19 @@ class Controller(QObject):
             if source == self.view.plainTextEdit:
                 input = self.view.get_plaintextedit_input(self.view.plainTextEdit)
                 if not input:
+                    self.view.clear_input_field(self.view.plainTextEdit)
                     return True
                 tickerwrapper = self.model.findTicker(input)
-                if not tickerwrapper.ticker:
+                if not tickerwrapper.verify_ticker_valid():
+                    self.view.clear_input_field(self.view.plainTextEdit)
                     return True
                 if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
+                    self.view.clear_input_field(self.view.plainTextEdit)
                     return True
                 self.model.add_stockticker_to_watchlistfile(tickerwrapper) # bool_addToWatchlist 1 if symbol shall be added, else 0
                 self.model.add_stock_to_tickerlist(tickerwrapper)
                 self.view.handle_enter_press_plainTextEdit(tickerwrapper)
+                self.view.clear_input_field(self.view.plainTextEdit)
                 self.stopLiveticker()
                 self.eventHandler_comboBox_2()
                 self.initLiveticker()
@@ -106,6 +107,7 @@ class Controller(QObject):
                 method = self.view.handle_enter_press_plainTextEdit_3()
                 if method:
                     self.model.methods.append(method)
+                self.view.clear_input_field(self.view.plainTextEdit_3)
                 return True
         #eventhandler for pressing delete in tableWidget_2 to remove statMethod from methodlist
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
