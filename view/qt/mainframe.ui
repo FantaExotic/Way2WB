@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>984</width>
-    <height>773</height>
+    <width>1044</width>
+    <height>837</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Way2WarrenBuffett</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="button_genGraph">
@@ -43,13 +43,13 @@
      <attribute name="title">
       <string>Configure Watchlist</string>
      </attribute>
-     <widget class="QTableWidget" name="tableWidget">
+     <widget class="QTableWidget" name="table_watchlist">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>30</y>
-        <width>701</width>
-        <height>591</height>
+        <y>50</y>
+        <width>711</width>
+        <height>581</height>
        </rect>
       </property>
       <property name="sortingEnabled">
@@ -91,18 +91,18 @@
      <attribute name="title">
       <string>Configure Analysis</string>
      </attribute>
-     <widget class="QTableWidget" name="tableWidget_2">
+     <widget class="QTableWidget" name="table_analysis">
       <property name="geometry">
        <rect>
-        <x>50</x>
+        <x>40</x>
         <y>50</y>
-        <width>471</width>
+        <width>491</width>
         <height>531</height>
        </rect>
       </property>
       <column>
        <property name="text">
-        <string>Statistical Method</string>
+        <string>Method</string>
        </property>
       </column>
       <column>
@@ -111,7 +111,7 @@
        </property>
       </column>
      </widget>
-     <widget class="QComboBox" name="comboBox">
+     <widget class="QComboBox" name="comboBox_method">
       <property name="geometry">
        <rect>
         <x>550</x>
@@ -121,7 +121,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="label_method">
       <property name="geometry">
        <rect>
         <x>580</x>
@@ -134,7 +134,7 @@
        <string>Statistical Method</string>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="plainTextEdit_3">
+     <widget class="QPlainTextEdit" name="plainTextEdit_methodinput">
       <property name="geometry">
        <rect>
         <x>580</x>
@@ -144,7 +144,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="label_methodinput">
       <property name="geometry">
        <rect>
         <x>600</x>
@@ -159,7 +159,7 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="label_addTicker">
     <property name="geometry">
      <rect>
       <x>820</x>
@@ -169,10 +169,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add symbol to watchlist</string>
+     <string>Add ticker to watchlist</string>
     </property>
    </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit">
+   <widget class="QPlainTextEdit" name="plainTextEdit_addTicker">
     <property name="geometry">
      <rect>
       <x>810</x>
@@ -182,17 +182,17 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit_2">
+   <widget class="QPlainTextEdit" name="plainTextEdit_searchTicker">
     <property name="geometry">
      <rect>
       <x>810</x>
-      <y>190</y>
+      <y>200</y>
       <width>141</width>
       <height>31</height>
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="label_searchTicker">
     <property name="geometry">
      <rect>
       <x>840</x>
@@ -202,10 +202,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>Search stock</string>
+     <string>Search ticker</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_2">
+   <widget class="QComboBox" name="comboBox_period">
     <property name="geometry">
      <rect>
       <x>790</x>
@@ -215,7 +215,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_5">
+   <widget class="QLabel" name="label_period">
     <property name="geometry">
      <rect>
       <x>840</x>
@@ -229,17 +229,6 @@
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>984</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

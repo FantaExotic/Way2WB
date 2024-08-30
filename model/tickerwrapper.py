@@ -21,14 +21,14 @@ class TickerWrapper:
             temp = self.tickerhistory[interval]
             return True
         except:
-            print("Tickerhistory doesnt exist yet in local memory. Will be downloaded now")
+            #print("Tickerhistory doesnt exist yet in local memory. Will be downloaded now")
             return False
 
-    def verify_period_valid(self, period: str):
+    def verify_period_valid(self, period: str) -> bool:
         if period in self.ticker._price_history._history_metadata['validRanges']:
             return True
         else:
-            print("Period for this ticker is invalid! Shorted period will be used instead.")
+            #print("Period for this ticker is invalid! Shorted period will be used instead.")
             return False
         
     def verify_ticker_valid(self) -> bool:

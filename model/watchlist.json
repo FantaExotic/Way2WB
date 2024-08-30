@@ -1,26 +1,58 @@
 [
     [
-        "DTE.DE",
-        "DT.TELEKOM AG NA"
+        "AAPL",
+        "Apple Inc."
     ],
     [
-        "META",
-        "Meta Platforms, Inc."
+        "SONY",
+        "Sony Group Corporation"
+    ],
+    [
+        "MSFT",
+        "Microsoft Corporation"
+    ],
+    [
+        "NVDA",
+        "NVIDIA Corporation"
+    ],
+    [
+        "GOOG",
+        "Alphabet Inc."
+    ],
+    [
+        "LULU",
+        "lululemon athletica inc."
+    ],
+    [
+        "AME",
+        "AMETEK, Inc."
     ],
     [
         "ASML",
         "ASML Holding N.V. - New York Re"
     ],
     [
-        "ARM",
-        "Arm Holdings plc"
+        "MELI",
+        "MercadoLibre, Inc."
     ],
     [
-        "AAPL",
-        "Apple Inc."
+        "NFLX",
+        "Netflix, Inc."
     ],
     [
-        "NVDA",
-        "NVIDIA Corporation"
+        "BBIO",
+        "BridgeBio Pharma, Inc."
+    ],
+    [
+        "MDB",
+        "MongoDB, Inc."
+    ],
+    [
+        "FUTU",
+        "Futu Holdings Limited"
+    ],
+    [
+        "INTC",
+        "Intel Corporation"
     ]
 ]

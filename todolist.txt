@@ -16,3 +16,12 @@ change objecttype of combobox_2 value, period and interval! Maybe Objectclasses?
 
 if controller.py l64, if period = period, then adding new stocks while period=1 year in combobox is set,
 raises errors. if period = '1d', delta doesnt update anymore if combobox value is different than '1d'
+
+add row for currency in tablewidget, and/or convert all values to euro 
+(ideally with presetting in configfile to determine currency to convert to)
+
+ideally implement filter to only add stockdata from each minute, which gets updated by liveticker.
+currently its getting updated unregulary (~ every second!). this might corrupt statistical analysis!
+
+recheck moving average. since its being calculated based on the last n data entries, but if we enter 20,
+then we want analysis for 20 days instead of the last 20 data entries ???? -> recheck Amox!

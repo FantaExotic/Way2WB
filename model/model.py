@@ -3,11 +3,8 @@ import json
 from pathlib import Path
 import os
 from model.tickerwrapper import TickerWrapper
-import yliveticker as ylt
 from utils.helpfunctions import *
-import numpy as np
 import pandas as pd
-from datetime import datetime, timezone
 
 class Model:
     def __init__(self):
@@ -16,15 +13,13 @@ class Model:
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
         self.methods = []
         self.movingaverage_symbol = "MA"
-        #self.yliveticker = None
-        self.initWatchlist()
+        self.init_tickerwrapperlist()
         self.update_tickerhistory(period='1d', verify_period=False)
 
-    def handle_liveticker_update(self, msg):
+    def update_liveticker(self, msg: dict) -> None:
         # Update ticker data here based on the received message
         for index,tickerwrapper in enumerate(self.tickerlist):
             if tickerwrapper.ticker.info['symbol'] == msg['id']:
-                #price = msg['price']
                 price = msg['price']
                 timestamp_ms = msg['timestamp']
                 timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
@@ -43,52 +38,32 @@ class Model:
                 # Update the existing tickerhistory['1m'] DataFrame with the new data
                 new_dataframe = pd.concat([self.tickerlist[index].tickerhistory['1m'],new_data])
                 self.tickerlist[index].tickerhistory['1m'] = new_dataframe
-                #TODO fix updating properties values and index (they are no attributes!)
 
-    def initWatchlist(self) -> None:
-        if not self.checkWatchlist():
+    def init_tickerwrapperlist(self) -> None:
+        if not self.check_watchlistfile():
             return
-
-        # Load existing data from the JSON file
         with open(self.watchlistfile, 'r') as file:
             data = json.load(file)
-
         for each in data:
-            tickerwrapper = self.findTicker(each[0])  # each[0] = symbol, each[1] = shortName
+            tickerwrapper = self.get_tickerwrapper(each[0])  # each[0] = symbol, each[1] = shortName
             if tickerwrapper.ticker:
-                self.add_stock_to_tickerlist(tickerwrapper)
+                self.add_tickerwrapper_to_tickerwrapperlist(tickerwrapper)
 
-    #checks if 
-    def checkWatchlist(self) -> bool:
-        
+    def check_watchlistfile(self) -> bool:
         if not os.path.exists(self.watchlistfile):
             print("Watchlistfile not found!")
             Path(self.watchlistfile).touch()
             return False
-        
         if not os.path.getsize(self.watchlistfile)>0:
             print("Watchlistfile is empty!")
             return False
-        
         return True
 
-    def getWatchlist(self,tickerwrapper: TickerWrapper) -> bool:
-
-        # Load existing data from the JSON file
-        with open(self.watchlistfile, 'r') as file:
-            data = json.load(file)
-
-        # extract each[0] (symbol) from each element in data, to check for duplicates
-        tmpdata = [each[0] for each in data]
-        if tickerwrapper.ticker.info["symbol"] in tmpdata:
-            print("Stock already exists in Watchlist!")
-            return False
-
-    def findTicker(self,symbol: str) -> TickerWrapper:
+    def get_tickerwrapper(self,symbol: str) -> TickerWrapper:
         tickerwrapper = TickerWrapper(yf.Ticker(symbol))
         return tickerwrapper
 
-    def update_tickerhistory(self,period: str, verify_period: bool):
+    def update_tickerhistory(self,period: str, verify_period: bool) -> None:
         """Updates tickerhistory for predefined period with verifying if 
         period range is valid and optionally by optimizing interval"""
         interval = setTickerArgs(period)
@@ -101,25 +76,23 @@ class Model:
             if not tickerwrapper.verify_period_valid(period = period):
                 period = 'max'
                 interval = setTickerArgs(period)
+                print("max period used!")
             tickerwrapper.set_tickerhistory(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
 
-    def add_stock_to_tickerlist(self,tickerwrapper: TickerWrapper) -> None:
+    def add_tickerwrapper_to_tickerwrapperlist(self,tickerwrapper: TickerWrapper) -> None:
         self.tickerlist.append(tickerwrapper)
 
-    def remove_stock_from_tickerlist(self,ticker_symbol: str) -> None:
+    def remove_tickerwrapper_from_tickerwrapperlist(self,ticker_symbol: str) -> None:
         for tickerwrapper in self.tickerlist:
             if tickerwrapper.ticker.info["symbol"] == ticker_symbol:
                 self.tickerlist.remove(tickerwrapper)
 
-    def add_stockticker_to_watchlistfile(self,tickerwrapper: TickerWrapper) -> None:
-        
-        if not self.checkWatchlist():
+    def add_ticker_to_watchlistfile(self,tickerwrapper: TickerWrapper) -> None:
+        if not self.check_watchlistfile():
             return
-
         # Load existing data from the JSON file
         with open(self.watchlistfile, 'r') as file:
             data = json.load(file)
-
         # Save the updated data back to the JSON file
         data.append([tickerwrapper.ticker.info["symbol"], tickerwrapper.ticker.info["shortName"]])
         with open(self.watchlistfile, 'w') as file:
@@ -129,7 +102,6 @@ class Model:
         # Load existing data from the JSON file
         with open(self.watchlistfile, 'r') as file:
             data = json.load(file)
-    
         # extract each[0] (symbol) from each element in data, to check for duplicates
         tmpdata = [each[0] for each in data]
         if tickerwrapper.ticker.info["symbol"] in tmpdata:
@@ -138,24 +110,16 @@ class Model:
         else:
             return False
 
-    def remove_stockticker_from_watchlistfile(self,symbol: str) -> None:
-        check = self.checkWatchlist()
+    def remove_ticker_from_watchlistfile(self,symbol: str) -> None:
+        check = self.check_watchlistfile()
         if not check:
             return
-
         with open(self.watchlistfile, 'r') as file:
             data = json.load(file)
-
         # extract each[0] (symbol) from each element in data, to check for duplicates
         tmpdata = [each[0] for each in data]
         for index,each in enumerate(tmpdata):
             if each == symbol:
                 data.pop(index)
-
         with open(self.watchlistfile, 'w') as file:
             json.dump(data, file, indent=4)
-
-
-    def remove_method(self,index):
-        #TODO: rework!
-        pass
