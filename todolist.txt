@@ -25,3 +25,7 @@ currently its getting updated unregulary (~ every second!). this might corrupt s
 
 recheck moving average. since its being calculated based on the last n data entries, but if we enter 20,
 then we want analysis for 20 days instead of the last 20 data entries ???? -> recheck Amox!
+
+fix issue when connection gets lost from liveticker! add regular checks!
+
+add checks to validate if any tickerhistory exists (e.g. CAJFF)

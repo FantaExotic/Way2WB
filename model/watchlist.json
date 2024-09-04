@@ -4,10 +4,6 @@
         "Apple Inc."
     ],
     [
-        "SONY",
-        "Sony Group Corporation"
-    ],
-    [
         "MSFT",
         "Microsoft Corporation"
     ],
@@ -20,39 +16,47 @@
         "Alphabet Inc."
     ],
     [
-        "LULU",
-        "lululemon athletica inc."
-    ],
-    [
-        "AME",
-        "AMETEK, Inc."
-    ],
-    [
         "ASML",
         "ASML Holding N.V. - New York Re"
     ],
     [
-        "MELI",
-        "MercadoLibre, Inc."
+        "LULU",
+        "lululemon athletica inc."
+    ],
+    [
+        "META",
+        "Meta Platforms, Inc."
+    ],
+    [
+        "GOLD",
+        "Barrick Gold Corporation"
+    ],
+    [
+        "EURUSD=X",
+        "EUR/USD"
     ],
     [
         "NFLX",
         "Netflix, Inc."
     ],
     [
-        "BBIO",
-        "BridgeBio Pharma, Inc."
+        "DTE.DE",
+        "DT.TELEKOM AG NA"
     ],
     [
-        "MDB",
-        "MongoDB, Inc."
+        "AIR.PA",
+        "AIRBUS SE"
     ],
     [
-        "FUTU",
-        "Futu Holdings Limited"
+        "BAS.DE",
+        "BASF SE NA O.N."
     ],
     [
-        "INTC",
-        "Intel Corporation"
+        "HMC",
+        "Honda Motor Company, Ltd."
+    ],
+    [
+        "CAJFF",
+        "Canon, Inc."
     ]
 ]

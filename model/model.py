@@ -8,36 +8,33 @@ import pandas as pd
 
 class Model:
     def __init__(self):
-        self.tickerlist = list()
+        self.tickerlist = dict()
         self.basepath = Path(__file__).resolve().parent
         self.watchlistfile = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
-        self.methods = []
-        self.movingaverage_symbol = "MA"
+        self.methods = dict()
         self.init_tickerwrapperlist()
-        self.update_tickerhistory(period='1d', verify_period=False)
+        self.update_tickerhistories(period='1d', verify_period=False)
 
     def update_liveticker(self, msg: dict) -> None:
-        # Update ticker data here based on the received message
-        for index,tickerwrapper in enumerate(self.tickerlist):
-            if tickerwrapper.ticker.info['symbol'] == msg['id']:
-                price = msg['price']
-                timestamp_ms = msg['timestamp']
-                timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
-                dayVolume = msg['dayVolume']
-                new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [dayVolume], 'Dividends': [222]}  # Replace with your new data
+        tickerwrapper = self.tickerlist[msg['id']]
+        price = msg['price']
+        timestamp_ms = msg['timestamp']
+        timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
+        dayVolume = msg['dayVolume']
+        new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [dayVolume], 'Dividends': [222]}  # Replace with your new data
 
-                # Convert new_value to a DataFrame with the appropriate index
-                new_data = pd.DataFrame(new_value)
-                new_data.index = pd.to_datetime([timestamp_s], unit="s")
+        # Convert new_value to a DataFrame with the appropriate index
+        new_data = pd.DataFrame(new_value)
+        new_data.index = pd.to_datetime([timestamp_s], unit="s")
 
-                if new_data.index.tz is None:
-                    new_data.index = new_data.index.tz_localize("UTC")
-                new_data.index = new_data.index.tz_convert(tickerwrapper.ticker._tz)
-                new_data.index.name = tickerwrapper.tickerhistory['1m'].index.name
+        if new_data.index.tz is None:
+            new_data.index = new_data.index.tz_localize("UTC")
+        new_data.index = new_data.index.tz_convert(tickerwrapper.ticker._tz)
+        new_data.index.name = tickerwrapper.tickerhistory['1m'].index.name
 
-                # Update the existing tickerhistory['1m'] DataFrame with the new data
-                new_dataframe = pd.concat([self.tickerlist[index].tickerhistory['1m'],new_data])
-                self.tickerlist[index].tickerhistory['1m'] = new_dataframe
+        # Update the existing tickerhistory['1m'] DataFrame with the new data
+        new_dataframe = pd.concat([self.tickerlist[msg['id']].tickerhistory['1m'],new_data])
+        self.tickerlist[msg['id']].tickerhistory['1m'] = new_dataframe
 
     def init_tickerwrapperlist(self) -> None:
         if not self.check_watchlistfile():
@@ -63,31 +60,35 @@ class Model:
         tickerwrapper = TickerWrapper(yf.Ticker(symbol))
         return tickerwrapper
 
-    def update_tickerhistory(self,period: str, verify_period: bool) -> None:
+    def update_tickerhistories(self,period: str, verify_period: bool) -> None:
+        for tickerwrapper in self.tickerlist.values():
+            self.update_tickerhistory(period=period, verify_period=verify_period, tickerwrapper=tickerwrapper)
+
+    def update_tickerhistory(self,period: str, verify_period: bool, tickerwrapper: TickerWrapper) -> None:
         """Updates tickerhistory for predefined period with verifying if 
         period range is valid and optionally by optimizing interval"""
         interval = setTickerArgs(period)
-        for tickerwrapper in self.tickerlist:
-            if tickerwrapper.verify_tickerhistory_exists(period = period):
-                continue
-            if not verify_period:
-                tickerwrapper.set_tickerhistory(period, interval)
-                continue
-            if not tickerwrapper.verify_period_valid(period = period):
-                period = 'max'
-                interval = setTickerArgs(period)
-                print("max period used!")
-            tickerwrapper.set_tickerhistory(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
+        if tickerwrapper.verify_tickerhistory_exists(period = period):
+            return
+        if not verify_period:
+            tickerwrapper.set_tickerhistory(period, interval)
+            return
+        if not tickerwrapper.verify_period_valid(period = period):
+            period = 'max'
+            interval = setTickerArgs(period)
+            print("max period used!")
+        tickerwrapper.set_tickerhistory(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
 
     def add_tickerwrapper_to_tickerwrapperlist(self,tickerwrapper: TickerWrapper) -> None:
-        self.tickerlist.append(tickerwrapper)
+        self.tickerlist[tickerwrapper.ticker.info["symbol"]] = tickerwrapper
 
     def remove_tickerwrapper_from_tickerwrapperlist(self,ticker_symbol: str) -> None:
-        for tickerwrapper in self.tickerlist:
+        for key, tickerwrapper in self.tickerlist.items():
             if tickerwrapper.ticker.info["symbol"] == ticker_symbol:
-                self.tickerlist.remove(tickerwrapper)
+                del self.tickerlist[key]
+                return
 
-    def add_ticker_to_watchlistfile(self,tickerwrapper: TickerWrapper) -> None:
+    def add_tickerinfo_to_watchlistfile(self,tickerwrapper: TickerWrapper) -> None:
         if not self.check_watchlistfile():
             return
         # Load existing data from the JSON file
@@ -123,3 +124,12 @@ class Model:
                 data.pop(index)
         with open(self.watchlistfile, 'w') as file:
             json.dump(data, file, indent=4)
+
+    def add_method(self, methodArg: int, method: str):
+        if not str(method) in self.methods:
+            self.methods[method] = [methodArg]
+        else:
+            self.methods[method].append(methodArg)
+
+    def remove_method(self, methodArg: str, method: str):
+        self.methods[method].remove(methodArg)

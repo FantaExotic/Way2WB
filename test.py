@@ -1,13 +1,4 @@
-from ystreamer import YahooStreamer
-import time
+my_dict = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'}
 
-def on_data(data):
-    print(data)
 
-stream = YahooStreamer(["AAPL", "MSFT"], on_data)
-stream.start()
-
-# Stream continues to run in the background so must wait indefinately 
-# or the program will exit
-while True:
-    time.sleep(1)
+print(my_dict)

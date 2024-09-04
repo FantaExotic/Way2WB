@@ -6,3 +6,6 @@ model/__pycache__/tickerwrapper.cpython-312.pyc
 model/__pycache__/model.cpython-312.pyc
 controller/__pycache__/controller.cpython-312.pyc
 __pycache__/tickerwrapper.cpython-312.pyc
+view/__pycache__/graphicview.cpython-312.pyc
+view/__pycache__/mainview.cpython-312.pyc
+controller/__pycache__/controller.cpython-312.pyc
