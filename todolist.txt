@@ -29,3 +29,5 @@ then we want analysis for 20 days instead of the last 20 data entries ???? -> re
 fix issue when connection gets lost from liveticker! add regular checks!
 
 add checks to validate if any tickerhistory exists (e.g. CAJFF)
+
+change datatypes from period and interval. Make enum for period and interval instead of str datatype!

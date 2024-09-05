@@ -1,7 +1,7 @@
 from controller.controller import Controller
 from model.model import Model
 from view.mainview import Mainview
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication
 from view.graphicview import Graphicview
 
 
