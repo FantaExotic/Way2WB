@@ -1,24 +1,19 @@
 from model.model import Model
 import matplotlib.pyplot as plt
 from view.mainview import Mainview
-import pandas as pd
-import numpy as np
-import yfinance as yf
-from datetime import datetime,  timedelta
-from model.tickerwrapper import TickerWrapper
 
 class Graphicview:
     def __init__(self, model: Model, mainview: Mainview):
         self.model = model
         self.mainview = mainview
 
-    #TODO: change self.model.tickerlist to symbollist, because we want to analyze only those, where hook is set at checkbox
+    #TODO: change self.model.tickerwrappers to symbollist, because we want to analyze only those, where hook is set at checkbox
     def initstaticGraph(self, symbollist: list, period: str) -> None:
-        for tickerwrapper in self.model.tickerlist.values():
+        for tickerwrapper in self.model.tickerwrappers.values():
             if not tickerwrapper.ticker.info["symbol"] in symbollist:
                 #print("stocksymbol not in selected list for analysis")
                 continue
-            tickerhistory = tickerwrapper.get_tickerhistory(period = period)
+            tickerhistory = tickerwrapper.get_tickerhistory_memory(period = period)
             #tickerhistory = tickerwrapper.ticker.history(period = period, interval = interval, prepost=True)
             tickerhistory['Close'].plot(label=f'{tickerwrapper.ticker.info["shortName"]}')
             if len(self.model.methods) == 0:

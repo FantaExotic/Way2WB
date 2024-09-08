@@ -29,12 +29,13 @@ class Controller(QObject):
 
     def initLiveticker(self) -> None:
         """Init liveticker and connects eventhandler to liveticker"""
-        self.yahoostreamer = YahooStreamer([tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerlist.values()], self.eventHandler_liveticker_update)
+        self.yahoostreamer = YahooStreamer([tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()], self.eventHandler_liveticker_update)
         self.yahoostreamer.start(reconnect=5)
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
+        self.liveticker.update_liveticker(msg)
         self.model.update_liveticker(msg)
         self.view.update_table_analysis(period) # only update history for timeinterval '1m'
 
@@ -43,6 +44,7 @@ class Controller(QObject):
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
         self.model.update_tickerhistories(period='1d', verify_period=False)
         self.model.update_tickerhistories(period=period, verify_period=True)
+        self.model.wrapper_convert_currencies()
         self.view.update_table_analysis(period)
 
     def eventHandler_plainTextEdit_searchTicker_enterPressed(self) -> None:
@@ -51,28 +53,29 @@ class Controller(QObject):
             1. Check if ticker is valid
             2. Check if ticker already exists in watchlistfile
             3. Check if tickerhistory is valid
-            4. Update Model (liveticker, watchlistfile, tickerhistory in tickerlist)
+            4. Update Model (liveticker, watchlistfile, tickerhistory in tickerlist, currencywrapper)
             5. update view (adds row in table watchlist and fills data)
             6. clears inputfield of plainTextEdit addTicker"""
         input = self.view.get_plaintextedit_input(self.view.plainTextEdit_addTicker)
         if not input:
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
-        tickerwrapper = self.model.get_tickerwrapper(input)
+        tickerwrapper = self.model.get_tickerwrapper_yfinance(input)
         if not tickerwrapper.verify_ticker_valid():
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
         if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
-        self.model.update_tickerhistory(period='1d', verify_period=False, tickerwrapper=tickerwrapper)
+        tickerwrapper.update_tickerhistory(period='1d', verify_period=False)
         if not tickerwrapper.verify_tickerhistory_valid(period="1d"):
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
-        self.model.update_tickerhistory(period=period, verify_period=True, tickerwrapper=tickerwrapper)
+        tickerwrapper.update_tickerhistory(period=period, verify_period=True)
+        tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
-        self.model.add_tickerwrapper_to_tickerwrapperlist(tickerwrapper)
+        self.model.add_tickerwrapper_to_tickerwrappers(tickerwrapper)
         self.yahoostreamer.add_liveticker(tickerwrapper.ticker.info["symbol"])
         self.view.add_table_watchlist_row(tickerwrapper=tickerwrapper, period=period)
         self.view.clear_input_field(self.view.plainTextEdit_addTicker)
@@ -97,7 +100,7 @@ class Controller(QObject):
         removedSymbol = self.view.get_selected_symbol_from_table_watchlist()
         self.view.remove_selected_row_from_table_watchlist()
         self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
-        self.model.remove_tickerwrapper_from_tickerwrapperlist(removedSymbol)
+        self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
         self.yahoostreamer.remove_liveticker(removedSymbol)
 
     def eventHandler_table_analysis_delete_row(self):

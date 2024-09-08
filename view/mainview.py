@@ -78,7 +78,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         interval = setTickerArgs(period)
         for row in range(self.table_watchlist.rowCount()):
             tickersymbol = self.table_watchlist.item(row,TableWatchlistRows.SYMBOLNAME.value).text()
-            self._set_table_watchlist_row_dynamicItems(tickerwrapper = self.model.tickerlist[tickersymbol], row = row, interval = interval)
+            self._set_table_watchlist_row_dynamicItems(tickerwrapper = self.model.tickerwrappers[tickersymbol], row = row, interval = interval)
 
     def handle_search_input_plainTextEdit_searchTicker(self):
         """filteres each row in table watchlist, if plainTextEdit searchTicker is no substring of symbol or shortName"""
@@ -105,7 +105,9 @@ class Mainview(QMainWindow, Ui_frame_main):
          """Clears text in qPlainTextEdit"""
          qPlainTextEdit.clear()
 
+
     """private functions"""
+
 
     def _set_table_watchlist_row_staticItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates static items in table watchlist, which only need to be set once"""
@@ -154,7 +156,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         """Init table watchlist"""
         period = get_keyFromDictValue(self.comboBox_period.currentText(), valid_periods)
         tickerwrapper: TickerWrapper
-        for tickerwrapper in self.model.tickerlist.values():
+        for tickerwrapper in self.model.tickerwrappers.values():
             self.add_table_watchlist_row(tickerwrapper=tickerwrapper,period=period)
 
     def _set_table_analysis_row_staticItems(self, methodArg: int, method: str, row: int):
