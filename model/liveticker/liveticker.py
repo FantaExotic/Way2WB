@@ -1,11 +1,12 @@
 import pandas as pd
 from model.currency import CurrencyWrapper
 from model.tickerwrapper import TickerWrapper
+import time
 
 class Liveticker:
-    
+
     def __init__(self):
-        pass
+        self.timestamp_start = int(time.time())
 
     def append_liveticker_to_tickerwrapper(self, msg: dict, currencywrapper: CurrencyWrapper, tickerwrapper: TickerWrapper) -> None:
         """processes received data from liveticker and appends it to tickerhistory of corresponding ticker"""
@@ -13,6 +14,9 @@ class Liveticker:
         timestamp_ms = msg['timestamp']
         timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
         dayVolume = msg['dayVolume']
+
+        if not self.verify_msg_valid(msg):
+            return
 
         # convert currency if required
         if tickerwrapper.verify_currency_conversion_required():
@@ -28,3 +32,11 @@ class Liveticker:
         # Update the existing tickerhistory['1m'] DataFrame with the new data
         new_dataframe = pd.concat([tickerwrapper.tickerhistory['1m'],new_data])
         tickerwrapper.tickerhistory['1m'] = new_dataframe
+
+    def verify_msg_valid(self, msg: dict):
+        #TODO: create class to handle liveticker for each ticker individually. Update self.timestamp_start for each ticker individually!
+        curr_timestamp = msg['timestamp']
+        if curr_timestamp >= self.timestamp_start:
+            return True
+        print("liveticker timestamp invalid!")
+        return False

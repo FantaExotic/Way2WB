@@ -2,8 +2,9 @@ from model.model import Model
 from view.mainview import Mainview
 from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject
+from PySide6.QtWidgets import QApplication
 from utils.helpfunctions import *
-from ystreamer import YahooStreamer
+from model.liveticker.ystreamer import YahooStreamer
 
 class Controller(QObject):
     def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
@@ -29,15 +30,18 @@ class Controller(QObject):
 
     def initLiveticker(self) -> None:
         """Init liveticker and connects eventhandler to liveticker"""
-        self.yahoostreamer = YahooStreamer([tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()], self.eventHandler_liveticker_update)
+        # Initialize the YahooStreamer with the tickers and the event handler
+        tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
+        self.yahoostreamer = YahooStreamer(tickers, self.eventHandler_liveticker_update)
+        # Start the YahooStreamer
         self.yahoostreamer.start(reconnect=5)
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
-        self.liveticker.update_liveticker(msg)
         self.model.update_liveticker(msg)
-        self.view.update_table_analysis(period) # only update history for timeinterval '1m'
+        self.view.update_table_analysis(period)  # only update history for time interval '1m'
+
 
     def eventHandler_comboBox_period_change(self) -> None:
         """Eventhandler, which is called if comboBox period value is changed"""

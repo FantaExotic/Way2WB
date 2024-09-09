@@ -101,9 +101,10 @@ class Model:
         return self.watchlistfile.check_duplicates_in_watchlistfile(symbol=tickerwrapper.ticker.info["symbol"])
     
     def update_liveticker(self, msg: dict):
-        tickersymbol = self.tickerwrappers[msg['id']]
+        #tickersymbol = self.tickerwrappers[msg['id']]
+        symbol = msg['id']
         tickerwrapper: TickerWrapper
-        tickerwrapper = self.tickerwrappers[tickersymbol]
+        tickerwrapper = self.tickerwrappers[symbol]
         currencywrapper: CurrencyWrapper
         currencywrapper = self.currencywrappers[tickerwrapper.get_currency()]
         self.liveticker.append_liveticker_to_tickerwrapper(msg=msg, tickerwrapper=tickerwrapper, currencywrapper=currencywrapper)

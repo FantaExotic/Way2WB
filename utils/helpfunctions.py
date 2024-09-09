@@ -52,8 +52,3 @@ valid_period_1day = {"5y": "5 years",
                        "ytd": "This year",
                        "max": "Maximum period"}
 valid_periods = valid_period_1minute | valid_period_5minutes | valid_period_1hour | valid_period_1day
-
-def gen_currency_symbol(currency_source: str) -> str:
-    currency_destination = "EUR"
-    symbolname = f'{currency_source}{currency_destination}=x'
-    return symbolname

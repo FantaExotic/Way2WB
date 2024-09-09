@@ -12,3 +12,7 @@ controller/__pycache__/controller.cpython-312.pyc
 view/__pycache__/graphicview.cpython-312.pyc
 model/liveticker/__pycache__/liveticker.cpython-312.pyc
 model/__pycache__/currency.cpython-312.pyc
+test.py
+model/liveticker/__pycache__/yaticker_pb2.cpython-312.pyc
+model/liveticker/__pycache__/ystreamer.cpython-312.pyc
+view/__pycache__/mainview.cpython-312.pyc
