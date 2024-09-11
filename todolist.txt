@@ -31,3 +31,6 @@ fix issue when connection gets lost from liveticker! add regular checks!
 add checks to validate if any tickerhistory exists (e.g. CAJFF)
 
 change datatypes from period and interval. Make enum for period and interval instead of str datatype!
+
+potential bug: when doing cuurency conversion, volumes also get conversion.
+this needs to be adapted, since volume isnt represented as number with currency

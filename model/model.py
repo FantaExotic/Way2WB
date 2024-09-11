@@ -16,7 +16,7 @@ class Model:
         self.init_tickerwrappers()
 
     def init_tickerwrappers(self) -> None:
-        """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '1d'
+        """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '5d'
             will be downloaded and checked for the existence of data, which is required in table watchlist"""
         if not self.watchlistfile.check_watchlistfile():
             return
@@ -26,9 +26,10 @@ class Model:
             tickerwrapper = self.get_tickerwrapper_yfinance(each[0])  # each[0] = symbol, each[1] = shortName
             if not tickerwrapper.verify_ticker_valid():
                 continue
-            tickerwrapper.update_tickerhistory(period='1d', verify_period=False)
-            if not tickerwrapper.verify_tickerhistory_valid(period="1d"):
+            tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
+            if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
                 continue
+            tickerwrapper.update_current_tickerhistory(period="5d")
             tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
             self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
 
@@ -50,9 +51,15 @@ class Model:
         for tickerwrapper in self.tickerwrappers.values():
             tickerwrapper: TickerWrapper
             tickerwrapper.update_tickerhistory(period=period, verify_period=verify_period)
+            tickerwrapper.update_current_tickerhistory(period=period)
 
     def add_tickerwrapper_to_tickerwrappers(self,tickerwrapper: TickerWrapper) -> None:
         """adds tickerwrapper to tickerwrappers"""
+        self.tickerwrappers[tickerwrapper.ticker.info["symbol"]] = tickerwrapper
+
+    def overwrite_tickerwrapper_in_tickerwrappers(self, tickerwrapper: TickerWrapper) -> None:
+        """overwrite existing tickerwrapper in tickerwrappers. This is needed if bigger period for same interval will be downloadedp"""
+        tickerwrapper.overwrite_tickerhistory()
         self.tickerwrappers[tickerwrapper.ticker.info["symbol"]] = tickerwrapper
 
     def remove_tickerwrapper_from_tickerwrappers(self,ticker_symbol: str) -> None:
@@ -76,12 +83,12 @@ class Model:
     def wrapper_convert_currency(self, tickerwrapper: TickerWrapper) -> TickerWrapper:
         """Wrapper for currency update, needed to use/update currencywrapper in currencywrappers"""
         currency = tickerwrapper.get_currency()
-        if tickerwrapper.verify_currencywrapper_exists_in_memory(currencywrappers=self.currencywrappers):
+        if self.verify_currencywrapper_exists_in_memory(currency=currency):
             currencywrapper = self.currencywrappers[currency]
         else:
             currencywrapper = self.get_currencywrapper_yfinance(tickerwrapper=tickerwrapper)
         tickerwrapper = currencywrapper.convert_currency_in_tickerhistory(tickerwrapper=tickerwrapper)
-        if not tickerwrapper.verify_currencywrapper_exists_in_memory(currencywrappers=self.currencywrappers):
+        if not self.verify_currencywrapper_exists_in_memory(currency=currency):
             self.currencywrappers[currency] = currencywrapper
         return tickerwrapper
 
@@ -89,6 +96,12 @@ class Model:
         for tickerwrapper in self.tickerwrappers.values():
             tickerwrapper: TickerWrapper
             tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
+
+    def verify_currencywrapper_exists_in_memory(self, currency: str):
+        if currency in self.currencywrappers:
+            return True
+        else:
+            return False
 
     """Wrapperfunctions for functions in Watchlistfile"""
 

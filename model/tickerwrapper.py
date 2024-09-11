@@ -1,6 +1,8 @@
 import yfinance as yf
 from utils.helpfunctions import *
 import pandas as pd
+import time
+from datetime import datetime
 
 class TickerWrapper:
 
@@ -60,12 +62,9 @@ class TickerWrapper:
             print("Tickerinformation invalid. Recheck entered ticker symbol!")
             return False
 
-    def update_tickerhistory(self,period: str, verify_period: bool) -> None:
-        """Updates tickerhistory for predefined period with verifying if 
-        period range is valid and optionally by optimizing interval"""
+    def overwrite_tickerhistory(self, period: str, verify_period: bool) -> None:
+        """Overwrites tickerhistory. This is needed if period='5d' shall be analyzed after startup (default period='5d')"""
         interval = setTickerArgs(period)
-        if self.verify_tickerhistory_exists(period = period):
-            return
         if not verify_period:
             self.set_tickerhistory_yfinance(period, interval)
             return
@@ -73,6 +72,49 @@ class TickerWrapper:
             period = 'max'
             interval = setTickerArgs(period)
         self.set_tickerhistory_yfinance(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
+
+    def update_tickerhistory(self, period: str, verify_period: bool) -> None:
+        """Updates tickerhistory for predefined period with verifying if 
+        period range is valid and optionally by optimizing interval"""
+        largest_period_for_same_interval = get_largest_period_for_same_interval(period)
+        if self.verify_tickerhistory_exists(period = largest_period_for_same_interval):
+            return
+        self.overwrite_tickerhistory(period=largest_period_for_same_interval, verify_period=verify_period)
+
+    def update_current_tickerhistory(self, period: str):
+        largest_period_for_same_interval = get_largest_period_for_same_interval(period)
+        interval = setTickerArgs(largest_period_for_same_interval)
+        
+        timestamp_ticker_start = self.ticker.history_metadata['firstTradeDate'] # first ticker date
+        timestamp_now = int(time.time())
+        timestamp_delta = timestamp_now - timestamp_ticker_start
+        tickerhistory_rows = self.tickerhistory[interval].shape[0]-1  # gets amount of rows in tickerhistory
+        tickerhistory_years = (timestamp_delta / 60 / 60 / 24) // 365 # converts timestamp delta to total years
+
+        len_tickerhistory_large_period = len(self.tickerhistory[interval])
+
+        if period == '1d':
+            len_tickerhistory_period = len_tickerhistory_large_period // 5 # because max period for "1d" is "5d"
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(4*len_tickerhistory_period):]
+        elif period == '3mo':
+            len_tickerhistory_period = len_tickerhistory_large_period // 8
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(7*len_tickerhistory_period):]
+        elif period == '6mo':
+            len_tickerhistory_period = len_tickerhistory_large_period // 4
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(3*len_tickerhistory_period):]
+        elif period == '1y':
+            len_tickerhistory_period = len_tickerhistory_large_period // 2
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[len_tickerhistory_period:]
+        elif period == '5y':
+            index_5y = round(len_tickerhistory_large_period - (tickerhistory_rows / tickerhistory_years * 5))
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[index_5y:]
+        elif period == '10y':
+            index_10y = round(len_tickerhistory_large_period - (tickerhistory_rows / tickerhistory_years * 10))
+            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[index_10y:]
+        else:
+            self.tickerhistory["current"] = self.tickerhistory[interval]
+
+        self.tickerhistory_currency["current"] = self.tickerhistory_currency[interval]
 
     def verify_currency_conversion_required(self):
         """Verifies if currency conversion is required"""
@@ -88,13 +130,6 @@ class TickerWrapper:
     
     def verify_tickerhistory_converted_already(self, currency_destination: str, interval: str):
         if self.tickerhistory_currency[interval] == currency_destination:
-            return True
-        else:
-            return False
-
-    def verify_currencywrapper_exists_in_memory(self, currencywrappers: dict):
-        currency = self.get_currency()
-        if currency in currencywrappers:
             return True
         else:
             return False

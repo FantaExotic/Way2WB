@@ -58,13 +58,12 @@ class Mainview(QMainWindow, Ui_frame_main):
         """Remove selected row from table analysis"""
         self._remove_selected_row_from_table(table=self.table_analysis)
 
-    def add_table_watchlist_row(self, tickerwrapper: TickerWrapper, period: str):
+    def add_table_watchlist_row(self, tickerwrapper: TickerWrapper):
         """ adds new row to table watchlist and sets the according values to all columns in the added row"""
         row = self.table_watchlist.rowCount()
         self.table_watchlist.insertRow(row)
-        interval = setTickerArgs(period)
         self._set_table_watchlist_row_staticItems(tickerwrapper=tickerwrapper,row=row)
-        self._set_table_watchlist_row_dynamicItems(tickerwrapper=tickerwrapper,row=row,interval=interval)
+        self._set_table_watchlist_row_dynamicItems(tickerwrapper=tickerwrapper,row=row)
 
     def add_table_analysis_row(self, methodArg: int, method: str) -> None:
         """adds new row to table analysis and sets the according values to all columns in the added row"""
@@ -72,13 +71,12 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.table_analysis.insertRow(row)
         self._set_table_analysis_row_staticItems(methodArg=methodArg, method=method, row=row)
 
-    def update_table_analysis(self, period: str):
+    def update_table_watchlist(self):
         """updates dynamic items in each row. Dynamic items are items, which will be update during runtime
             by the liveticker (e.g.: currentValue and deltavalue)"""
-        interval = setTickerArgs(period)
         for row in range(self.table_watchlist.rowCount()):
             tickersymbol = self.table_watchlist.item(row,TableWatchlistRows.SYMBOLNAME.value).text()
-            self._set_table_watchlist_row_dynamicItems(tickerwrapper = self.model.tickerwrappers[tickersymbol], row = row, interval = interval)
+            self._set_table_watchlist_row_dynamicItems(tickerwrapper = self.model.tickerwrappers[tickersymbol], row = row)
 
     def handle_search_input_plainTextEdit_searchTicker(self):
         """filteres each row in table watchlist, if plainTextEdit searchTicker is no substring of symbol or shortName"""
@@ -118,7 +116,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         analyze_checkbox.setChecked(False)
         self.table_watchlist.setCellWidget(row, TableWatchlistRows.CHECKBOX.value, analyze_checkbox)
 
-    def _set_table_watchlist_row_dynamicItems(self, tickerwrapper: TickerWrapper, row: int, interval: str): #TODO: change datatype for interval! create own datatype for available intervals
+    def _set_table_watchlist_row_dynamicItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates dynamic items in table watchlist, which will be updated dynamically based on data from liveticker"""
         lastDataframeIndex = tickerwrapper.tickerhistory['1m'].shape[0]-1
         openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
@@ -126,8 +124,10 @@ class Mainview(QMainWindow, Ui_frame_main):
         stockvalue.setData(Qt.EditRole, openprice)
         self.table_watchlist.setItem(row, TableWatchlistRows.CURRENTVALUE.value, stockvalue)
         stockdiff = QTableWidgetItem()
-        delta_start = tickerwrapper.tickerhistory[interval]['Open'].values[0].item() #index 0 because we want difference to start of interval
+        delta_start = tickerwrapper.tickerhistory["current"]['Open'].values[0].item() #index 0 because we want difference to start of interval
         delta_end = openprice
+        if delta_start == 0:
+            delta_start = tickerwrapper.tickerhistory["current"]['Close'].values[0].item() # workaround if Open value == 0
         delta = delta_end/delta_start * 100 - 100
         stockdiff.setData(Qt.EditRole, delta)
         self.table_watchlist.setItem(row, TableWatchlistRows.DELTAVALUE.value, stockdiff)
@@ -140,6 +140,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         """Init comboBox period with all periods from yfinance"""
         for value in valid_periods.values():
             self.comboBox_period.addItem(value)
+        self.comboBox_period.setCurrentText("5 days")
 
     def _get_selected_item_from_table(self, table: QTableWidget, column: TableWatchlistRows.SYMBOLNAME.value) -> QTableWidgetItem:
         """return item in selected row and column, table in arg"""
@@ -154,10 +155,9 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _init_table_watchlist(self):
         """Init table watchlist"""
-        period = get_keyFromDictValue(self.comboBox_period.currentText(), valid_periods)
         tickerwrapper: TickerWrapper
         for tickerwrapper in self.model.tickerwrappers.values():
-            self.add_table_watchlist_row(tickerwrapper=tickerwrapper,period=period)
+            self.add_table_watchlist_row(tickerwrapper=tickerwrapper)
 
     def _set_table_analysis_row_staticItems(self, methodArg: int, method: str, row: int):
         """Set method and methodArg for corresponding row in table analysis"""

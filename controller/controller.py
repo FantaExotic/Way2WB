@@ -2,12 +2,12 @@ from model.model import Model
 from view.mainview import Mainview
 from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 from utils.helpfunctions import *
 from model.liveticker.ystreamer import YahooStreamer
 
 class Controller(QObject):
-    def __init__(self, model: Model, view: Mainview, app, graphicview: Graphicview) -> None:
+    def __init__(self, model: Model, view: Mainview, app: QApplication, graphicview: Graphicview) -> None:
         super().__init__()
         self.model = model
         self.view = view
@@ -38,18 +38,16 @@ class Controller(QObject):
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
-        period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
         self.model.update_liveticker(msg)
-        self.view.update_table_analysis(period)  # only update history for time interval '1m'
-
+        self.view.update_table_watchlist()  # only update history for time interval '1m'
 
     def eventHandler_comboBox_period_change(self) -> None:
         """Eventhandler, which is called if comboBox period value is changed"""
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
-        self.model.update_tickerhistories(period='1d', verify_period=False)
+        self.model.update_tickerhistories(period='5d', verify_period=False)
         self.model.update_tickerhistories(period=period, verify_period=True)
         self.model.wrapper_convert_currencies()
-        self.view.update_table_analysis(period)
+        self.view.update_table_watchlist()
 
     def eventHandler_plainTextEdit_searchTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
@@ -71,17 +69,18 @@ class Controller(QObject):
         if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
-        tickerwrapper.update_tickerhistory(period='1d', verify_period=False)
-        if not tickerwrapper.verify_tickerhistory_valid(period="1d"):
+        tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
+        if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
         tickerwrapper.update_tickerhistory(period=period, verify_period=True)
+        tickerwrapper.update_current_tickerhistory(period=period)
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
         self.model.add_tickerwrapper_to_tickerwrappers(tickerwrapper)
         self.yahoostreamer.add_liveticker(tickerwrapper.ticker.info["symbol"])
-        self.view.add_table_watchlist_row(tickerwrapper=tickerwrapper, period=period)
+        self.view.add_table_watchlist_row(tickerwrapper=tickerwrapper)
         self.view.clear_input_field(self.view.plainTextEdit_addTicker)
 
     def eventHandler_plainTextEdit_methodinput(self) -> None:
@@ -122,7 +121,7 @@ class Controller(QObject):
         period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods) # helpfunction needed to get key from value and dict
         self.graphicview.initstaticGraph(selected_stocks, period)
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source: QWidget, event: QEvent):
         """Eventfilter, which is the main eventloop for most eventhandlers, 
             expect eventhandlers related to Qwidgets (e.g. button_genGraph)"""
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:

@@ -8,7 +8,6 @@ class CurrencyWrapper(TickerWrapper):
         self.currencydestination = "EUR"
         self.currencysource = None
         self.currencysymbol = None
-        #self.conversionrate = sourcetickerwrapper.ticker.fast_info["last_price"]
 
     def convert_currency_in_tickerhistory(self, tickerwrapper: TickerWrapper):
         """Converts currency"""
