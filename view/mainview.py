@@ -4,7 +4,7 @@ from model.model import Model
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPlainTextEdit
 from model.tickerwrapper import TickerWrapper
-from utils.helpfunctions import *
+from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
 
 class TableWatchlistRows(Enum):
@@ -103,9 +103,7 @@ class Mainview(QMainWindow, Ui_frame_main):
          """Clears text in qPlainTextEdit"""
          qPlainTextEdit.clear()
 
-
     """private functions"""
-
 
     def _set_table_watchlist_row_staticItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates static items in table watchlist, which only need to be set once"""
@@ -138,9 +136,9 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _init_intervals(self):
         """Init comboBox period with all periods from yfinance"""
-        for value in valid_periods.values():
-            self.comboBox_period.addItem(value)
-        self.comboBox_period.setCurrentText("5 days")
+        for period in Period_Tickerhistory_Longname:
+            self.comboBox_period.addItem(period.value)
+        self.comboBox_period.setCurrentText(Period_Tickerhistory_Longname.DAYS_5.value)
 
     def _get_selected_item_from_table(self, table: QTableWidget, column: TableWatchlistRows.SYMBOLNAME.value) -> QTableWidgetItem:
         """return item in selected row and column, table in arg"""

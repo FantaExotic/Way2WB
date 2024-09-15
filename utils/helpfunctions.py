@@ -8,11 +8,6 @@
 ## 
 ################################################################################
 #TODO: goes to mainview
-def get_keyFromDictValue(value: str, dict: dict) -> str:
-    key_list = list(dict.keys())
-    val_list = list(dict.values())
-    pos = val_list.index(value)
-    return key_list[pos]
 
 ################################################################################
 ## 
@@ -40,23 +35,6 @@ def setTickerArgs(period: str) -> str:
         print("period not matching any element in self.valid_periods. default: interval = 1d")
         interval = "1d"
     return interval
-
-#TODO: goes to class Interval, which will be implemented in model
-def get_largest_period_for_same_interval(period: str) -> str:
-    """Check which period class the input period belongs to, then return the last key, which is the largest one,
-        if its written chronologically"""
-    if period in valid_period_1minute:
-        largest_period = list(valid_period_1minute.keys())[-1]
-    elif period in valid_period_5minutes:
-        largest_period = list(valid_period_5minutes.keys())[-1]
-    elif period in valid_period_1hour:
-        largest_period = list(valid_period_1hour.keys())[-1]
-    elif period in valid_period_1day:
-        largest_period = list(valid_period_1day.keys())[-1]
-    else:
-        print("error in assigning largest period for this periodclass")
-        largest_period = "5d" # Default if the period is unmatched
-    return largest_period
 
 
 # helpvariables to determine interval based on period

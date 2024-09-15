@@ -2,6 +2,7 @@ from model.model import Model
 import matplotlib.pyplot as plt
 from view.mainview import Mainview
 from model.tickerwrapper import TickerWrapper
+from model.historymanager import *
 
 class Graphicview:
     def __init__(self, model: Model, mainview: Mainview):
@@ -9,7 +10,7 @@ class Graphicview:
         self.mainview = mainview
 
     #TODO: change self.model.tickerwrappers to symbollist, because we want to analyze only those, where hook is set at checkbox
-    def initstaticGraph(self, symbollist: list, period: str) -> None:
+    def initstaticGraph(self, symbollist: list, period: Period_Tickerhistory) -> None:
         for tickerwrapper in self.model.tickerwrappers.values():
             tickerwrapper: TickerWrapper
             if not tickerwrapper.ticker.info["symbol"] in symbollist:

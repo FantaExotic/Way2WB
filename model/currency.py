@@ -1,5 +1,4 @@
 from model.tickerwrapper import TickerWrapper
-from utils.helpfunctions import *
 
 class CurrencyWrapper(TickerWrapper):
     """This class handles the currency conversion of all tickerwrappers to the desired currency (default: EURO)"""

@@ -1,5 +1,5 @@
 import yfinance as yf
-from utils.helpfunctions import *
+from model.historymanager import *
 import pandas as pd
 import time
 from datetime import datetime
@@ -14,28 +14,28 @@ class TickerWrapper:
     def set_ticker_yfinance(self, symbol: str) -> None:
         self.ticker = yf.Ticker(symbol)
 
-    def set_tickerhistory_yfinance(self, period: str, interval: str) -> None:
+    def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
-        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True)
+        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False)
         self.tickerhistory_currency[interval] = self.get_currency()
 
-    def get_tickerhistory_memory(self, period: str):
+    def get_tickerhistory_memory(self, period: Period_Tickerhistory):
         """returns tickerhistory from tickerwrapper in memory for predefined period"""
-        interval = setTickerArgs(period)
+        interval = assign_period_to_interval(period)
         return self.tickerhistory[interval]
         
-    def verify_tickerhistory_exists(self, period: str) -> bool:
+    def verify_tickerhistory_exists(self, period: Period_Tickerhistory) -> bool:
         """Checks if tickerhistory for this period already exists in model.tickerwrappers"""
-        interval = setTickerArgs(period)
+        interval = assign_period_to_interval(period)
         if interval in self.tickerhistory:
             return True
         else:
             return False
         
-    def verify_tickerhistory_valid(self, period: str) -> bool:
+    def verify_tickerhistory_valid(self, period: Period_Tickerhistory) -> bool:
         """This function verifies all data access, which will be made in Mainview to get data for table_watchlist"""
         try:
-            interval = setTickerArgs(period)
+            interval = assign_period_to_interval(period)
             lastDataframeIndex = self.tickerhistory['1m'].shape[0]-1
             openprice = self.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
             delta_start = self.tickerhistory[interval]['Open'].values[0].item()
@@ -44,7 +44,7 @@ class TickerWrapper:
             print("This tickerhistory does not contain all required data, which is needed to table_watchlist")
             return False
 
-    def verify_period_valid(self, period: str) -> bool:
+    def verify_period_valid(self, period: Period_Tickerhistory) -> bool:
         """This function verifies if the period in arg for this ticker is valid.
             Can only be called if tickerhistory for any period or interval was downloaded once for this ticker"""
         if period in self.ticker._price_history._history_metadata['validRanges']:
@@ -62,18 +62,18 @@ class TickerWrapper:
             print("Tickerinformation invalid. Recheck entered ticker symbol!")
             return False
 
-    def overwrite_tickerhistory(self, period: str, verify_period: bool) -> None:
+    def overwrite_tickerhistory(self, period: Period_Tickerhistory, verify_period: bool) -> None:
         """Overwrites tickerhistory. This is needed if period='5d' shall be analyzed after startup (default period='5d')"""
-        interval = setTickerArgs(period)
+        interval = assign_period_to_interval(period)
         if not verify_period:
             self.set_tickerhistory_yfinance(period, interval)
             return
         if not self.verify_period_valid(period = period):
             period = 'max'
-            interval = setTickerArgs(period)
+            interval = assign_period_to_interval(period)
         self.set_tickerhistory_yfinance(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
 
-    def update_tickerhistory(self, period: str, verify_period: bool) -> None:
+    def update_tickerhistory(self, period: Period_Tickerhistory, verify_period: bool) -> None:
         """Updates tickerhistory for predefined period with verifying if 
         period range is valid and optionally by optimizing interval"""
         largest_period_for_same_interval = get_largest_period_for_same_interval(period)
@@ -81,9 +81,9 @@ class TickerWrapper:
             return
         self.overwrite_tickerhistory(period=largest_period_for_same_interval, verify_period=verify_period)
 
-    def update_current_tickerhistory(self, period: str):
+    def update_current_tickerhistory(self, period: Period_Tickerhistory):
         largest_period_for_same_interval = get_largest_period_for_same_interval(period)
-        interval = setTickerArgs(largest_period_for_same_interval)
+        interval = assign_period_to_interval(largest_period_for_same_interval)
         
         timestamp_ticker_start = self.ticker.history_metadata['firstTradeDate'] # first ticker date
         timestamp_now = int(time.time())

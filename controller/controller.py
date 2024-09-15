@@ -3,7 +3,7 @@ from view.mainview import Mainview
 from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject
 from PySide6.QtWidgets import QApplication, QWidget
-from utils.helpfunctions import *
+from model.historymanager import *
 from model.liveticker.ystreamer import YahooStreamer
 
 class Controller(QObject):
@@ -43,7 +43,7 @@ class Controller(QObject):
 
     def eventHandler_comboBox_period_change(self) -> None:
         """Eventhandler, which is called if comboBox period value is changed"""
-        period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
+        period = get_shortname_from_longname(self.view.comboBox_period.currentText())
         self.model.update_tickerhistories(period='5d', verify_period=False)
         self.model.update_tickerhistories(period=period, verify_period=True)
         self.model.wrapper_convert_currencies()
@@ -73,7 +73,7 @@ class Controller(QObject):
         if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
             self.view.clear_input_field(self.view.plainTextEdit_addTicker)
             return
-        period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods)
+        period = get_shortname_from_longname(self.view.comboBox_period.currentText())
         tickerwrapper.update_tickerhistory(period=period, verify_period=True)
         tickerwrapper.update_current_tickerhistory(period=period)
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
@@ -100,11 +100,12 @@ class Controller(QObject):
             1. gets selected symbol from table watchlist
             2. removes row in table watchlist
             3. removes tickerwrapper in Model (tickerlist, watchlistfile, liveticker)"""
-        removedSymbol = self.view.get_selected_symbol_from_table_watchlist()
-        self.view.remove_selected_row_from_table_watchlist()
-        self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
-        self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
-        self.yahoostreamer.remove_liveticker(removedSymbol)
+        if self.view.table_watchlist.rowCount():
+            removedSymbol = self.view.get_selected_symbol_from_table_watchlist()
+            self.view.remove_selected_row_from_table_watchlist()
+            self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
+            self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
+            self.yahoostreamer.remove_liveticker(removedSymbol)
 
     def eventHandler_table_analysis_delete_row(self):
         """Eventhandler, which is called if Delete button is pressed if a row is selected in table analysis"""
@@ -118,7 +119,7 @@ class Controller(QObject):
         """Eventhandler, which is called if button genGraph is clicked. 
             Generates plot for the tickerhistories of all selected checkboxes in table watchlist"""
         selected_stocks = self.view.get_selected_Checkboxes()
-        period = get_keyFromDictValue(self.view.comboBox_period.currentText(), valid_periods) # helpfunction needed to get key from value and dict
+        period = get_shortname_from_longname(self.view.comboBox_period.currentText())
         self.graphicview.initstaticGraph(selected_stocks, period)
 
     def eventFilter(self, source: QWidget, event: QEvent):

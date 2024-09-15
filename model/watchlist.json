@@ -1,15 +1,27 @@
 [
     [
-        "AAPL",
-        "Apple Inc."
+        "PEP",
+        "Pepsico, Inc."
     ],
     [
-        "MSFT",
-        "Microsoft Corporation"
+        "KO",
+        "Coca-Cola Company (The)"
     ],
     [
-        "NVDA",
-        "NVIDIA Corporation"
+        "MC.PA",
+        "LVMH"
+    ],
+    [
+        "LULU",
+        "lululemon athletica inc."
+    ],
+    [
+        "O",
+        "Realty Income Corporation"
+    ],
+    [
+        "SONY",
+        "Sony Group Corporation"
     ],
     [
         "ASML",
@@ -20,15 +32,27 @@
         "Alphabet Inc."
     ],
     [
-        "META",
-        "Meta Platforms, Inc."
+        "NKE",
+        "Nike, Inc."
     ],
     [
-        "SAP.DE",
-        "SAP SE O.N."
+        "PYPL",
+        "PayPal Holdings, Inc."
     ],
     [
-        "SONY",
-        "Sony Group Corporation"
+        "AME",
+        "AMETEK, Inc."
+    ],
+    [
+        "CSCO",
+        "Cisco Systems, Inc."
+    ],
+    [
+        "PUM.DE",
+        "PUMA SE"
+    ],
+    [
+        "VOW3.DE",
+        "VOLKSWAGEN AG VZO O.N."
     ]
 ]

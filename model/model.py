@@ -5,6 +5,7 @@ import pandas as pd
 from model.watchlistfile import Watchlistfile
 from model.currency import CurrencyWrapper
 from model.liveticker.liveticker import Liveticker
+from model.historymanager import *
 
 class Model:
     def __init__(self):
@@ -46,7 +47,7 @@ class Model:
         currencywrapper.set_ticker_yfinance(currencywrapper.currencysymbol)
         return currencywrapper
 
-    def update_tickerhistories(self,period: str, verify_period: bool) -> None:
+    def update_tickerhistories(self,period: Period_Tickerhistory, verify_period: bool) -> None:
         """Updates tickerhistory for all tickers in tickerlist"""
         for tickerwrapper in self.tickerwrappers.values():
             tickerwrapper: TickerWrapper
