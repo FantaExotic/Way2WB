@@ -14,11 +14,20 @@
    <string>Way2WarrenBuffett</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="toolTipDuration">
+    <number>-1</number>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
    <widget class="QPushButton" name="button_genGraph">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>30</y>
+      <x>860</x>
+      <y>50</y>
       <width>131</width>
       <height>81</height>
      </rect>
@@ -32,8 +41,8 @@
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>761</width>
-      <height>681</height>
+      <width>769</width>
+      <height>770</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -46,10 +55,10 @@
      <widget class="QTableWidget" name="table_watchlist">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>711</width>
-        <height>581</height>
+        <x>-1</x>
+        <y>-1</y>
+        <width>765</width>
+        <height>740</height>
        </rect>
       </property>
       <property name="sortingEnabled">
@@ -94,10 +103,10 @@
      <widget class="QTableWidget" name="table_analysis">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>50</y>
-        <width>491</width>
-        <height>531</height>
+        <x>2</x>
+        <y>2</y>
+        <width>541</width>
+        <height>739</height>
        </rect>
       </property>
       <column>
@@ -162,7 +171,7 @@
    <widget class="QLabel" name="label_addTicker">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>860</x>
       <y>250</y>
       <width>131</width>
       <height>21</height>
@@ -175,7 +184,7 @@
    <widget class="QPlainTextEdit" name="plainTextEdit_addTicker">
     <property name="geometry">
      <rect>
-      <x>810</x>
+      <x>850</x>
       <y>280</y>
       <width>151</width>
       <height>31</height>
@@ -185,9 +194,9 @@
    <widget class="QPlainTextEdit" name="plainTextEdit_searchTicker">
     <property name="geometry">
      <rect>
-      <x>810</x>
+      <x>850</x>
       <y>200</y>
-      <width>141</width>
+      <width>151</width>
       <height>31</height>
      </rect>
     </property>
@@ -195,7 +204,7 @@
    <widget class="QLabel" name="label_searchTicker">
     <property name="geometry">
      <rect>
-      <x>840</x>
+      <x>880</x>
       <y>170</y>
       <width>81</width>
       <height>16</height>
@@ -208,7 +217,7 @@
    <widget class="QComboBox" name="comboBox_period">
     <property name="geometry">
      <rect>
-      <x>790</x>
+      <x>840</x>
       <y>400</y>
       <width>181</width>
       <height>31</height>
@@ -218,14 +227,40 @@
    <widget class="QLabel" name="label_period">
     <property name="geometry">
      <rect>
-      <x>840</x>
-      <y>370</y>
+      <x>890</x>
+      <y>360</y>
       <width>81</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>Time period</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_importWatchlist">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>570</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>import watchlist</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_watchlistpath">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>630</y>
+      <width>231</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

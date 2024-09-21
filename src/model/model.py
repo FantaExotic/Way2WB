@@ -1,11 +1,12 @@
 import json
 from model.tickerwrapper import TickerWrapper
-from utils.helpfunctions import *
 import pandas as pd
 from model.watchlistfile import Watchlistfile
 from model.currency import CurrencyWrapper
 from model.liveticker.liveticker import Liveticker
 from model.historymanager import *
+
+import requests_cache
 
 class Model:
     def __init__(self):
@@ -14,7 +15,14 @@ class Model:
         self.watchlistfile = Watchlistfile()
         self.methods = dict()
         self.liveticker = Liveticker()
+
+        self.session = self.init_session()
         self.init_tickerwrappers()
+
+    def init_session(self) -> requests_cache.CachedSession:
+        session = requests_cache.CachedSession('yfinance.cache')
+        session.headers['User-Agent'] = "my-program/1.0"
+        return session
 
     def init_tickerwrappers(self) -> None:
         """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '5d'
@@ -37,14 +45,14 @@ class Model:
     def get_tickerwrapper_yfinance(self, symbol: str) -> TickerWrapper:
         """Downloads and returns ticker for symbol in arg"""
         tickerwrapper = TickerWrapper()
-        tickerwrapper.set_ticker_yfinance(symbol)
+        tickerwrapper.set_ticker_yfinance(symbol=symbol, session=self.session)
         return tickerwrapper
 
     def get_currencywrapper_yfinance(self, tickerwrapper: TickerWrapper) -> CurrencyWrapper:
         currencywrapper = CurrencyWrapper()
         currencywrapper.currencysource = tickerwrapper.ticker.info['currency']
         currencywrapper.currencysymbol = f'{currencywrapper.currencysource}{currencywrapper.currencydestination}=x'
-        currencywrapper.set_ticker_yfinance(currencywrapper.currencysymbol)
+        currencywrapper.set_ticker_yfinance(symbol=currencywrapper.currencysymbol, session=self.session)
         return currencywrapper
 
     def update_tickerhistories(self,period: Period_Tickerhistory, verify_period: bool) -> None:
@@ -101,8 +109,7 @@ class Model:
     def verify_currencywrapper_exists_in_memory(self, currency: str):
         if currency in self.currencywrappers:
             return True
-        else:
-            return False
+        return False
 
     """Wrapperfunctions for functions in Watchlistfile"""
 

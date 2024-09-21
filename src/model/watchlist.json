@@ -32,10 +32,6 @@
         "Alphabet Inc."
     ],
     [
-        "NKE",
-        "Nike, Inc."
-    ],
-    [
         "PYPL",
         "PayPal Holdings, Inc."
     ],
@@ -48,11 +44,43 @@
         "Cisco Systems, Inc."
     ],
     [
-        "PUM.DE",
-        "PUMA SE"
-    ],
-    [
         "VOW3.DE",
         "VOLKSWAGEN AG VZO O.N."
+    ],
+    [
+        "PLD",
+        "Prologis, Inc."
+    ],
+    [
+        "V",
+        "Visa Inc."
+    ],
+    [
+        "AAPL",
+        "Apple Inc."
+    ],
+    [
+        "INTC",
+        "Intel Corporation"
+    ],
+    [
+        "DTE.DE",
+        "DT.TELEKOM AG NA"
+    ],
+    [
+        "005930.KS",
+        "SamsungElec"
+    ],
+    [
+        "SMSN.IL",
+        "SAMSUNG ELECTRONICS CO LTD (ATT"
+    ],
+    [
+        "SMSD.IL",
+        "SAMSUNG ELECTRONICS CO LTD (ATT"
+    ],
+    [
+        "BTC-USD",
+        "Bitcoin USD"
     ]
 ]

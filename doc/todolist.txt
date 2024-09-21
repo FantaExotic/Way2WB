@@ -34,3 +34,27 @@ change datatypes from period and interval. Make enum for period and interval ins
 
 potential bug: when doing cuurency conversion, volumes also get conversion.
 this needs to be adapted, since volume isnt represented as number with currency
+
+#################################################################################
+new tasks - old ones seem to be solved
+################################################################################
+
+make sure timestamps with timezone (e.g. 15.10.23 16:41 - 4:00) gets converted to 15.10.23 22:41 (CEST +2) for all dataframes in tickerhistory
+
+increment current timestamp in liveticker to prevent duplicate data for same timestamp!
+
+recheck ametek before 2pm, i get error when accessing data for today because its empty before 2pm
+
+bug when period=1d is selected, then liveticker will only update in self.tickerwrapper.tickerhistory["1m"],
+but not in self.tickerwrapper.tickerhistory["current"]. fix this!
+other periods dont have to be considered, since lvieticker only gets appended to self.tickerwrapper.tickerhistory["1m"]
+consequence: latest liveticker data will not be printed when pressing genGraph!
+
+create individual case for period="1d". dont create it based on period="5d".
+adapt handling in historymanager and set default period="1d".
+reason: prevent case where no data for this day is present
+
+TODO: case where e.g. period="2y" results in period="max" because only period=1y exists,
+check if generation of period=1y or period=2y works correct in self.current_tickerhistory
+see in: self.tickerwrapper.update_current_tickerhistory()
+

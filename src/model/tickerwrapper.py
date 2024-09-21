@@ -4,6 +4,8 @@ import pandas as pd
 import time
 from datetime import datetime
 
+import requests_cache
+
 class TickerWrapper:
 
     def __init__(self) -> None:
@@ -11,12 +13,12 @@ class TickerWrapper:
         self.tickerhistory = dict()
         self.tickerhistory_currency = dict()
 
-    def set_ticker_yfinance(self, symbol: str) -> None:
-        self.ticker = yf.Ticker(symbol)
+    def set_ticker_yfinance(self, symbol: str, session: requests_cache.CachedSession) -> None:
+        self.ticker = yf.Ticker(symbol, session=session)
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
-        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False)
+        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False) # turned off repair, because for period=2y the download takes way too long
         self.tickerhistory_currency[interval] = self.get_currency()
 
     def get_tickerhistory_memory(self, period: Period_Tickerhistory):
@@ -36,13 +38,22 @@ class TickerWrapper:
         """This function verifies all data access, which will be made in Mainview to get data for table_watchlist"""
         try:
             interval = assign_period_to_interval(period)
-            lastDataframeIndex = self.tickerhistory['1m'].shape[0]-1
-            openprice = self.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
+            #lastDataframeIndex = self.tickerhistory['1m'].shape[0]-1
+            openprice = self.tickerhistory['1m']['Open'].values[-1].item()
             delta_start = self.tickerhistory[interval]['Open'].values[0].item()
+            timestamp_today = self.tickerhistory['1m'].index
             return True
         except:
-            print("This tickerhistory does not contain all required data, which is needed to table_watchlist")
+            print(f'{self.ticker.info["symbol"]} does not contain all required data, which is needed to table_watchlist')
             return False
+        
+    #def verify_current_tickerhistory_valid(self) -> bool:
+    #    try:
+    #        temp_current = self.tickerhistory["current"]["Close"][0]
+    #        return True
+    #    except:
+    #        print("Current history does not contain any data. Will be set invalid for this period")
+    #        return False
 
     def verify_period_valid(self, period: Period_Tickerhistory) -> bool:
         """This function verifies if the period in arg for this ticker is valid.
@@ -51,10 +62,19 @@ class TickerWrapper:
             return True
         else:
             return False
-
-    def verify_ticker_valid(self) -> bool:
+        
+    def verify_financials_valid(self) -> bool:
         """Verifies that the downloaded ticker is a valid one (to prevent empty tickers)"""
         # trailingPegRatio is the best identifier which I found so far, improvable!
+        try:
+            trailing_pe = self.ticker.info['trailingPE']
+            forward_pe = self.ticker.info['forwardPE']
+            income = self.ticker.financials.loc["Net Income"]
+            revenue = self.ticker.financials.loc["Total Revenue"]
+        except:
+            return False
+
+    def verify_ticker_valid(self) -> bool:
         dict_invalid_ticker = {'trailingPegRatio': None}
         if self.ticker.info != dict_invalid_ticker:
             return True
@@ -84,33 +104,40 @@ class TickerWrapper:
     def update_current_tickerhistory(self, period: Period_Tickerhistory):
         largest_period_for_same_interval = get_largest_period_for_same_interval(period)
         interval = assign_period_to_interval(largest_period_for_same_interval)
-        
-        timestamp_ticker_start = self.ticker.history_metadata['firstTradeDate'] # first ticker date
-        timestamp_now = int(time.time())
-        timestamp_delta = timestamp_now - timestamp_ticker_start
-        tickerhistory_rows = self.tickerhistory[interval].shape[0]-1  # gets amount of rows in tickerhistory
-        tickerhistory_years = (timestamp_delta / 60 / 60 / 24) // 365 # converts timestamp delta to total years
 
-        len_tickerhistory_large_period = len(self.tickerhistory[interval])
+        #new approach
+        timezone = self.tickerhistory[interval].index.tz
+        today_midnight = pd.Timestamp.now(tz=timezone).normalize()
 
         if period == '1d':
-            len_tickerhistory_period = len_tickerhistory_large_period // 5 # because max period for "1d" is "5d"
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(4*len_tickerhistory_period):]
+            midnight = today_midnight
+            for days in range(1,5): # TODO: hardcoded fpr period="5d", retrieve 5 instead from period enum!
+                if not self.tickerhistory[interval].index[-1] >= midnight:
+                    midnight = midnight - pd.Timedelta(days=days)
+                    continue
+                timestamp_today = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= midnight][0]
+                self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_today:]
+                break
         elif period == '3mo':
-            len_tickerhistory_period = len_tickerhistory_large_period // 8
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(7*len_tickerhistory_period):]
+            three_months_ago = today_midnight - pd.tseries.offsets.DateOffset(months=3)
+            timestamp_three_months_ago = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= three_months_ago][0]
+            self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_three_months_ago:]
         elif period == '6mo':
-            len_tickerhistory_period = len_tickerhistory_large_period // 4
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[(3*len_tickerhistory_period):]
+            six_months_ago = today_midnight - pd.tseries.offsets.DateOffset(months=6)
+            timestamp_six_months_ago = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= six_months_ago][0]
+            self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_six_months_ago:]
         elif period == '1y':
-            len_tickerhistory_period = len_tickerhistory_large_period // 2
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[len_tickerhistory_period:]
+            one_year_ago = today_midnight - pd.tseries.offsets.DateOffset(years=1)
+            timestamp_one_year_ago = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= one_year_ago][0]
+            self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_one_year_ago:]
         elif period == '5y':
-            index_5y = round(len_tickerhistory_large_period - (tickerhistory_rows / tickerhistory_years * 5))
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[index_5y:]
+            five_years_ago = today_midnight - pd.tseries.offsets.DateOffset(years=5)
+            timestamp_five_years_ago = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= five_years_ago][0]
+            self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_five_years_ago:]
         elif period == '10y':
-            index_10y = round(len_tickerhistory_large_period - (tickerhistory_rows / tickerhistory_years * 10))
-            self.tickerhistory["current"] = self.tickerhistory[interval].iloc[index_10y:]
+            ten_years_ago = today_midnight - pd.tseries.offsets.DateOffset(years=10)
+            timestamp_ten_years_ago = self.tickerhistory[interval].index[self.tickerhistory[interval].index >= ten_years_ago][0]
+            self.tickerhistory["current"] = self.tickerhistory[interval].loc[timestamp_ten_years_ago:]
         else:
             self.tickerhistory["current"] = self.tickerhistory[interval]
 

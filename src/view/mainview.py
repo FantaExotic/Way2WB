@@ -116,8 +116,7 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _set_table_watchlist_row_dynamicItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates dynamic items in table watchlist, which will be updated dynamically based on data from liveticker"""
-        lastDataframeIndex = tickerwrapper.tickerhistory['1m'].shape[0]-1
-        openprice = tickerwrapper.tickerhistory['1m']['Open'].values[lastDataframeIndex].item()
+        openprice = tickerwrapper.tickerhistory['1m']['Open'].values[-1].item()
         stockvalue = QTableWidgetItem() # very inefficient!
         stockvalue.setData(Qt.EditRole, openprice)
         self.table_watchlist.setItem(row, TableWatchlistRows.CURRENTVALUE.value, stockvalue)

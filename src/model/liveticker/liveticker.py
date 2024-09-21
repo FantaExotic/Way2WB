@@ -15,7 +15,7 @@ class Liveticker:
         timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
         dayVolume = msg['dayVolume']
 
-        if not self.verify_msg_valid(msg):
+        if not self.verify_msg_valid(msg, timestamp=timestamp_s):
             return
 
         # convert currency if required
@@ -33,10 +33,9 @@ class Liveticker:
         new_dataframe = pd.concat([tickerwrapper.tickerhistory['1m'],new_data])
         tickerwrapper.tickerhistory['1m'] = new_dataframe
 
-    def verify_msg_valid(self, msg: dict):
+    def verify_msg_valid(self, msg: dict, timestamp: int):
         #TODO: create class to handle liveticker for each ticker individually. Update self.timestamp_start for each ticker individually!
-        curr_timestamp = msg['timestamp']
-        if curr_timestamp >= self.timestamp_start:
+        if timestamp >= self.timestamp_start:
             return True
-        print("liveticker timestamp invalid!")
+        #print(f'liveticker outdated invalid for {msg["id"]}')
         return False

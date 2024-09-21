@@ -12,6 +12,7 @@ class Controller(QObject):
         self.model = model
         self.view = view
         self.app = app
+        app.setStyle("Fusion")
         self.graphicview = graphicview
         self.initLiveticker()
 
@@ -119,8 +120,7 @@ class Controller(QObject):
         """Eventhandler, which is called if button genGraph is clicked. 
             Generates plot for the tickerhistories of all selected checkboxes in table watchlist"""
         selected_stocks = self.view.get_selected_Checkboxes()
-        period = get_shortname_from_longname(self.view.comboBox_period.currentText())
-        self.graphicview.initstaticGraph(selected_stocks, period)
+        self.graphicview.initstaticGraph(selected_stocks)
 
     def eventFilter(self, source: QWidget, event: QEvent):
         """Eventfilter, which is the main eventloop for most eventhandlers, 
