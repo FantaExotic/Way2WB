@@ -6,8 +6,12 @@ import sys
 class Watchlistfile:
 
     def __init__(self):
-        self.basepath = Path(__file__).resolve().parent
-        self.watchlistfilePath = self.basepath.joinpath("watchlist.json")  # configfile containing watchlist
+        #self.basepath = Path(__file__).resolve().parent
+        self.watchlistfilePath = None  # configfile containing watchlist
+        self.flag_watchlist_selected = False # flag indicates if watchlist was selected in startupview
+
+    def set_watchlistfile(self, watchlistfilePath: str) -> bool:
+        self.watchlistfilePath = Path(watchlistfilePath)
 
     def check_watchlistfile(self) -> bool:
         """Checks if watchlistfile exists and contains data"""
@@ -36,7 +40,7 @@ class Watchlistfile:
             json.dump(data, file, indent=4)
 
     def check_duplicates_in_watchlistfile(self,symbol: str) -> bool:
-        """Cheks if symbol in arg is duplicate in watchlistfile """
+        """Checks if symbol in arg is duplicate in watchlistfile """
         with open(self.watchlistfilePath, 'r') as file:
             data = json.load(file)
         # extract each[0] (symbol) from each element in data, to check for duplicates

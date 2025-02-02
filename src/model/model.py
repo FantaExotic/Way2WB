@@ -16,6 +16,7 @@ class Model:
         self.methods = dict()
         self.liveticker = Liveticker()
 
+    def init_model(self):
         self.session = self.init_session()
         self.init_tickerwrappers()
 

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QCheckBox, QTableWidget
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QCheckBox, QTableWidget, QFileDialog
 from view.qt.mainframe import Ui_frame_main
 from model.model import Model
 from PySide6.QtCore import Qt
@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QPlainTextEdit
 from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
+import os
 
 class TableWatchlistRows(Enum):
     """Config for columns in table watchlist"""
@@ -26,6 +27,8 @@ class Mainview(QMainWindow, Ui_frame_main):
         super().__init__()
         self.setupUi(self)
         self.model = model
+
+    def init_mainview(self) -> None:
         self._init_statMethods()
         self._init_intervals()
         self._init_table_watchlist()
@@ -102,6 +105,32 @@ class Mainview(QMainWindow, Ui_frame_main):
     def clear_input_field(self, qPlainTextEdit: QPlainTextEdit):
          """Clears text in qPlainTextEdit"""
          qPlainTextEdit.clear()
+
+    """functions for startup view"""
+
+    def startApplication(self):
+        if self.model.watchlistfile.flag_watchlist_selected:
+            self.model.init_model()
+            self.init_mainview()
+            self.stackedWidget.setCurrentIndex(1)
+
+    def select_watchlist(self):
+                # Open a file dialog to select a file
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Json file (*.json)")
+        if file_path:
+            self.label_watchlistpath_startup.setText(file_path)  # Update the label with the selected file path
+            #self.stackedWidget.setCurrentIndex(1)  # Switch to the main application page
+        else:
+            self.label_watchlistpath_startup.setText("No Watchlist imported. Application cannot be started before loading watchlist")
+        return file_path
+    
+    def create_watchlist(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Json file (*.json)")
+
+        with open(file_path, 'w') as file:
+            pass  # Do nothing, just create the empty file
+        print(file_path)
+        return file_path
 
     """private functions"""
 

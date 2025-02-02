@@ -58,3 +58,16 @@ TODO: case where e.g. period="2y" results in period="max" because only period=1y
 check if generation of period=1y or period=2y works correct in self.current_tickerhistory
 see in: self.tickerwrapper.update_current_tickerhistory()
 
+
+New TODOS (need to recheck old ones!):
+
+cleanup git ignore to remove all *.pyc files in pycache folder
+
+feature executable:
+    - create startup view to select watchlist
+    - add button and label:
+        button: on click loads file explorer to select watchlistfile
+        label: shows the loaded watchlistfile
+        
+    - optional: create init/config file to store and load latest watchlist file
+    - 
