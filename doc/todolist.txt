@@ -71,3 +71,8 @@ feature executable:
         
     - optional: create init/config file to store and load latest watchlist file
     - 
+
+UML diagramm:
+
+zur Übersicht der Komponenten/Module/Klassen und Funktionen
+graphviz

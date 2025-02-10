@@ -1,6 +1,6 @@
 from PySide6.QtCore import QThread, Signal
 import websocket
-from .yaticker_pb2 import yaticker
+from yliveticker.yaticker_pb2 import yaticker
 import base64
 import json
 
