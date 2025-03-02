@@ -4,4 +4,6 @@
 .vscode/settings.json
 **/yfinance.cache
 venv
-srv/venv
+bin/venv
+bin/build
+src/model/watchlist

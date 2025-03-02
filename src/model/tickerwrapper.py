@@ -76,9 +76,14 @@ class TickerWrapper:
 
     def verify_ticker_valid(self) -> bool:
         dict_invalid_ticker = {'trailingPegRatio': None}
-        if self.ticker.info != dict_invalid_ticker:
-            return True
-        else:
+        #workaround with try except, in case it takes very long to get the data 
+        try:
+            if self.ticker.info != dict_invalid_ticker:
+                return True
+            else:
+                print("Tickerinformation invalid. Recheck entered ticker symbol!")
+                return False   
+        except:
             print("Tickerinformation invalid. Recheck entered ticker symbol!")
             return False
 

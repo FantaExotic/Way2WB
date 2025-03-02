@@ -11,7 +11,7 @@ class Watchlistfile:
         self.flag_watchlist_selected = False # flag indicates if watchlist was selected in startupview
 
     def set_watchlistfile(self, watchlistfilePath: str) -> bool:
-        self.watchlistfilePath = Path(watchlistfilePath)
+        self.watchlistfilePath = watchlistfilePath
 
     def check_watchlistfile(self) -> bool:
         """Checks if watchlistfile exists and contains data"""
