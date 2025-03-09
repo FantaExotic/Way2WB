@@ -1,0 +1,1 @@
+pyside6-uic mainframe.ui -o mainframe.py

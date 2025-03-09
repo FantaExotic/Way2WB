@@ -2,11 +2,11 @@ from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QCheckBox, QTableWi
 from view.qt.mainframe import Ui_frame_main
 from model.model import Model
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QPlainTextEdit, QComboBox
 from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
-import os
+
 
 class TableWatchlistRows(Enum):
     """Config for columns in table watchlist"""
@@ -22,6 +22,13 @@ class TableAnalysisRows(Enum):
     METHODNAME = 0
     METHODVALUE = 1
 
+class TableRulesRows(Enum):
+    """Config for columns in table rules"""
+    PERIOD = 0
+    THRESHOLD = 1
+    SYMBOL = 2
+    ACTIVATED = 3
+
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
         super().__init__()
@@ -30,8 +37,9 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def init_mainview(self) -> None:
         self._init_statMethods()
-        self._init_intervals()
+        self._init_intervals(comboBox=self.comboBox_period)
         self._init_table_watchlist()
+        self.init_notifier_and_rules()
 
     def get_selected_Checkboxes(self) -> list:
         """function to get all selected checkboxes from watchlist, which shall be used for analysis and graph generation"""
@@ -129,8 +137,56 @@ class Mainview(QMainWindow, Ui_frame_main):
 
         with open(file_path, 'w') as file:
             pass  # Do nothing, just create the empty file
-        print(file_path)
+        #print(file_path)
         return file_path
+    
+    """functions for notifier and rules"""
+    
+    def init_notifier_and_rules(self):
+        self.init_comboBox_tickers_addRule()
+        self._init_intervals(comboBox=self.comboBox_period_addRule)
+
+    def init_comboBox_tickers_addRule(self):
+        """Init comboBox period for addRule with all periods from yfinance"""
+        tickerwrapper: TickerWrapper
+        for tickerwrapper in self.model.tickerwrappers.values():
+            self.add_comboBox_tickers_addRule(tickerwrapper)
+        #self.comboBox_tickers_addRule.setCurrentText(tickerwrapper.ticker.info["shortName"])
+
+    def add_comboBox_tickers_addRule(self, tickerwrapper: TickerWrapper):
+        """adds new ticker to comboBox tickers_addRule"""
+        self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info["symbol"])
+
+    def add_table_rules_row(self, symbol: str, threshold: int, period: str):
+        """ adds new row to table watchlist and sets the according values to all columns in the added row"""
+        row = self.table_rules.rowCount()
+        self.table_rules.insertRow(row)
+        self._set_table_rules_row_staticItems(symbol=symbol, threshold=threshold, period=period, row=row)
+
+    def remove_selected_row_from_table_rules(self) -> None:
+        """Remove selected row from table analysis"""
+        self._remove_selected_row_from_table(table=self.table_rules)
+
+    def get_selected_items_from_table_rules(self) -> str:
+        """Get symbol of the selected row in table rules"""
+        symbol = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.SYMBOL.value).text()
+        threshold = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.THRESHOLD.value).text()
+        period = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.PERIOD.value).text()
+        return [symbol, threshold, period]
+    
+    def deactivate_rules_from_deleted_tickers(self, removedSymbol: str):
+        for row in range(self.table_rules.rowCount()):
+            item = self.table_rules.item(row, TableRulesRows.SYMBOL.value).text()
+            if item == removedSymbol:
+                checkboxItem = self.table_rules.cellWidget(row, TableRulesRows.ACTIVATED.value)
+                checkboxItem.setChecked(False)
+                #TODO: add feature to grey out checkbox with setEnabled(False),
+                # but needs be enabled again if ticker will be readded to watchlist
+
+    def removeItem_comboBox_tickers_addRule(self, symbol: str):
+        index = self.comboBox_tickers_addRule.findText(symbol)
+        if index >= 0:
+            self.comboBox_tickers_addRule.removeItem(index)
 
     """private functions"""
 
@@ -162,11 +218,11 @@ class Mainview(QMainWindow, Ui_frame_main):
         """Add methods to comboBox method"""
         self.comboBox_method.addItem("Moving Average")
 
-    def _init_intervals(self):
+    def _init_intervals(self, comboBox: QComboBox):
         """Init comboBox period with all periods from yfinance"""
         for period in Period_Tickerhistory_Longname:
-            self.comboBox_period.addItem(period.value)
-        self.comboBox_period.setCurrentText(Period_Tickerhistory_Longname.DAYS_5.value)
+            comboBox.addItem(period.value)
+        comboBox.setCurrentText(Period_Tickerhistory_Longname.DAYS_5.value)
 
     def _get_selected_item_from_table(self, table: QTableWidget, column: TableWatchlistRows.SYMBOLNAME.value) -> QTableWidgetItem:
         """return item in selected row and column, table in arg"""
@@ -191,3 +247,16 @@ class Mainview(QMainWindow, Ui_frame_main):
         statistical_method_value.setData(Qt.EditRole, methodArg)
         self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, QTableWidgetItem(method))
         self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, statistical_method_value)
+
+    def _set_table_rules_row_staticItems(self, symbol: str, threshold: int, period: str, row: int):
+        """Set rule for corresponding row in table rules"""
+        item_symbol = QTableWidgetItem(symbol)
+        item_threshold = QTableWidgetItem()
+        item_period = QTableWidgetItem(period)
+        item_threshold.setData(Qt.EditRole, threshold)
+        self.table_rules.setItem(row, TableRulesRows.SYMBOL.value, item_symbol)
+        self.table_rules.setItem(row, TableRulesRows.THRESHOLD.value, item_threshold)
+        self.table_rules.setItem(row, TableRulesRows.PERIOD.value, item_period)
+        item_activated = QCheckBox()
+        item_activated.setChecked(False)
+        self.table_rules.setCellWidget(row, TableRulesRows.ACTIVATED.value, item_activated)

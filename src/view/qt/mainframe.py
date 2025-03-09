@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QHeaderView, QLabel,
-    QMainWindow, QPlainTextEdit, QPushButton, QSizePolicy,
-    QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QHeaderView,
+    QLabel, QMainWindow, QPlainTextEdit, QPushButton,
+    QSizePolicy, QStackedWidget, QTabWidget, QTableWidget,
+    QTableWidgetItem, QWidget)
 
 class Ui_frame_main(object):
     def setupUi(self, frame_main):
@@ -129,13 +129,59 @@ class Ui_frame_main(object):
         self.label_methodinput.setObjectName(u"label_methodinput")
         self.label_methodinput.setGeometry(QRect(720, 260, 111, 21))
         self.tabWidget.addTab(self.tab_analysis, "")
+        self.tab_notifier = QWidget()
+        self.tab_notifier.setObjectName(u"tab_notifier")
+        self.plainTextEdit_subscribetopicinput = QPlainTextEdit(self.tab_notifier)
+        self.plainTextEdit_subscribetopicinput.setObjectName(u"plainTextEdit_subscribetopicinput")
+        self.plainTextEdit_subscribetopicinput.setGeometry(QRect(663, 450, 111, 31))
+        self.label_subscribetopicinput = QLabel(self.tab_notifier)
+        self.label_subscribetopicinput.setObjectName(u"label_subscribetopicinput")
+        self.label_subscribetopicinput.setGeometry(QRect(633, 410, 181, 31))
+        self.label_subscribetopic = QLabel(self.tab_notifier)
+        self.label_subscribetopic.setObjectName(u"label_subscribetopic")
+        self.label_subscribetopic.setGeometry(QRect(633, 500, 171, 81))
+        self.checkBox_activateNotifier = QCheckBox(self.tab_notifier)
+        self.checkBox_activateNotifier.setObjectName(u"checkBox_activateNotifier")
+        self.checkBox_activateNotifier.setGeometry(QRect(650, 360, 121, 20))
+        self.table_rules = QTableWidget(self.tab_notifier)
+        if (self.table_rules.columnCount() < 4):
+            self.table_rules.setColumnCount(4)
+        __qtablewidgetitem8 = QTableWidgetItem()
+        self.table_rules.setHorizontalHeaderItem(0, __qtablewidgetitem8)
+        __qtablewidgetitem9 = QTableWidgetItem()
+        self.table_rules.setHorizontalHeaderItem(1, __qtablewidgetitem9)
+        __qtablewidgetitem10 = QTableWidgetItem()
+        self.table_rules.setHorizontalHeaderItem(2, __qtablewidgetitem10)
+        __qtablewidgetitem11 = QTableWidgetItem()
+        self.table_rules.setHorizontalHeaderItem(3, __qtablewidgetitem11)
+        self.table_rules.setObjectName(u"table_rules")
+        self.table_rules.setGeometry(QRect(0, 0, 541, 739))
+        self.comboBox_period_addRule = QComboBox(self.tab_notifier)
+        self.comboBox_period_addRule.setObjectName(u"comboBox_period_addRule")
+        self.comboBox_period_addRule.setGeometry(QRect(620, 30, 181, 31))
+        self.label_period_addRule = QLabel(self.tab_notifier)
+        self.label_period_addRule.setObjectName(u"label_period_addRule")
+        self.label_period_addRule.setGeometry(QRect(670, 10, 81, 21))
+        self.plainTextEdit_threshold_addRule = QPlainTextEdit(self.tab_notifier)
+        self.plainTextEdit_threshold_addRule.setObjectName(u"plainTextEdit_threshold_addRule")
+        self.plainTextEdit_threshold_addRule.setGeometry(QRect(650, 100, 111, 31))
+        self.label_threshold_addRule = QLabel(self.tab_notifier)
+        self.label_threshold_addRule.setObjectName(u"label_threshold_addRule")
+        self.label_threshold_addRule.setGeometry(QRect(680, 70, 71, 31))
+        self.label_tickers_addRule = QLabel(self.tab_notifier)
+        self.label_tickers_addRule.setObjectName(u"label_tickers_addRule")
+        self.label_tickers_addRule.setGeometry(QRect(680, 140, 71, 31))
+        self.comboBox_tickers_addRule = QComboBox(self.tab_notifier)
+        self.comboBox_tickers_addRule.setObjectName(u"comboBox_tickers_addRule")
+        self.comboBox_tickers_addRule.setGeometry(QRect(620, 170, 181, 31))
+        self.tabWidget.addTab(self.tab_notifier, "")
         self.stackedWidget.addWidget(self.page_main)
         frame_main.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(frame_main)
 
         self.stackedWidget.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(frame_main)
@@ -174,5 +220,20 @@ class Ui_frame_main(object):
         self.label_method.setText(QCoreApplication.translate("frame_main", u"Statistical Method", None))
         self.label_methodinput.setText(QCoreApplication.translate("frame_main", u"Input value", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_analysis), QCoreApplication.translate("frame_main", u"Configure Analysis", None))
+        self.label_subscribetopicinput.setText(QCoreApplication.translate("frame_main", u"Enter topic to send notifications", None))
+        self.label_subscribetopic.setText("")
+        self.checkBox_activateNotifier.setText(QCoreApplication.translate("frame_main", u"Activate Notifier", None))
+        ___qtablewidgetitem8 = self.table_rules.horizontalHeaderItem(0)
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("frame_main", u"Time period", None));
+        ___qtablewidgetitem9 = self.table_rules.horizontalHeaderItem(1)
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("frame_main", u"Threshold (in %)", None));
+        ___qtablewidgetitem10 = self.table_rules.horizontalHeaderItem(2)
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("frame_main", u"Tickers", None));
+        ___qtablewidgetitem11 = self.table_rules.horizontalHeaderItem(3)
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("frame_main", u"Activated", None));
+        self.label_period_addRule.setText(QCoreApplication.translate("frame_main", u"Time period", None))
+        self.label_threshold_addRule.setText(QCoreApplication.translate("frame_main", u"Threshold", None))
+        self.label_tickers_addRule.setText(QCoreApplication.translate("frame_main", u"Tickers", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_notifier), QCoreApplication.translate("frame_main", u"Notifier and Rules", None))
     # retranslateUi
 

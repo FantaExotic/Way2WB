@@ -6,4 +6,4 @@
 venv
 bin/venv
 bin/build
-src/model/watchlist
+test.py

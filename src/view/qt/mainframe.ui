@@ -116,7 +116,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_watchlist">
        <attribute name="title">
@@ -342,6 +342,159 @@
         </property>
         <property name="text">
          <string>Input value</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_notifier">
+       <attribute name="title">
+        <string>Notifier and Rules</string>
+       </attribute>
+       <widget class="QPlainTextEdit" name="plainTextEdit_subscribetopicinput">
+        <property name="geometry">
+         <rect>
+          <x>663</x>
+          <y>450</y>
+          <width>111</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_subscribetopicinput">
+        <property name="geometry">
+         <rect>
+          <x>633</x>
+          <y>410</y>
+          <width>181</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enter topic to send notifications</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_subscribetopic">
+        <property name="geometry">
+         <rect>
+          <x>633</x>
+          <y>500</y>
+          <width>171</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_activateNotifier">
+        <property name="geometry">
+         <rect>
+          <x>650</x>
+          <y>360</y>
+          <width>121</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Activate Notifier</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="table_rules">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>541</width>
+          <height>739</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>Time period</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Threshold (in %)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Tickers</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Activated</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QComboBox" name="comboBox_period_addRule">
+        <property name="geometry">
+         <rect>
+          <x>620</x>
+          <y>30</y>
+          <width>181</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_period_addRule">
+        <property name="geometry">
+         <rect>
+          <x>670</x>
+          <y>10</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Time period</string>
+        </property>
+       </widget>
+       <widget class="QPlainTextEdit" name="plainTextEdit_threshold_addRule">
+        <property name="geometry">
+         <rect>
+          <x>650</x>
+          <y>100</y>
+          <width>111</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_threshold_addRule">
+        <property name="geometry">
+         <rect>
+          <x>680</x>
+          <y>70</y>
+          <width>71</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Threshold</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_tickers_addRule">
+        <property name="geometry">
+         <rect>
+          <x>680</x>
+          <y>140</y>
+          <width>71</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Tickers</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="comboBox_tickers_addRule">
+        <property name="geometry">
+         <rect>
+          <x>620</x>
+          <y>170</y>
+          <width>181</width>
+          <height>31</height>
+         </rect>
         </property>
        </widget>
       </widget>

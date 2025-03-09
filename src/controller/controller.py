@@ -19,16 +19,32 @@ class Controller(QObject):
         self.initLiveticker()
 
         """Install event filter for plainTextEdit"""
-        self.mainview.plainTextEdit_addTicker.installEventFilter(self)
-        self.mainview.plainTextEdit_searchTicker.installEventFilter(self)
-        self.mainview.plainTextEdit_methodinput.installEventFilter(self)
-        self.mainview.table_watchlist.installEventFilter(self)
-        self.mainview.table_analysis.installEventFilter(self)
-        self.mainview.button_genGraph.installEventFilter(self)
-        self.mainview.comboBox_period.currentTextChanged.connect(self.eventHandler_comboBox_period_change)
+        #startup page
         self.mainview.button_startAppliction.installEventFilter(self)
         self.mainview.button_selectWatchlist.installEventFilter(self)
         self.mainview.button_createWatchlist.installEventFilter(self)
+
+        #mainpage
+        self.mainview.button_genGraph.installEventFilter(self)
+
+        #mainpage: Configure Watchlist
+        self.mainview.table_watchlist.installEventFilter(self)        
+        self.mainview.plainTextEdit_addTicker.installEventFilter(self)
+        self.mainview.plainTextEdit_searchTicker.installEventFilter(self)
+        self.mainview.comboBox_period.currentTextChanged.connect(self.eventHandler_comboBox_period_change)
+
+        #mainpage: Configure analysis
+        self.mainview.table_analysis.installEventFilter(self)
+        self.mainview.plainTextEdit_methodinput.installEventFilter(self)
+
+        #mainpage: Notifier and rules
+        self.mainview.table_rules.installEventFilter(self)
+        #self.mainview.comboBox_period_addRule.installEventFilter(self)
+        #self.mainview.comboBox_tickers_addRule.installEventFilter(self)
+        self.mainview.plainTextEdit_threshold_addRule.installEventFilter(self)
+        self.mainview.plainTextEdit_subscribetopicinput.installEventFilter(self)
+        self.mainview.checkBox_activateNotifier.installEventFilter(self)
+
 
     def run(self) -> None:
         self.mainview.show()
@@ -55,7 +71,7 @@ class Controller(QObject):
         self.model.wrapper_convert_currencies()
         self.mainview.update_table_watchlist()
 
-    def eventHandler_plainTextEdit_searchTicker_enterPressed(self) -> None:
+    def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
             It does the following steps:
             1. Check if ticker is valid
@@ -88,7 +104,8 @@ class Controller(QObject):
         self.yahoostreamer.add_liveticker(tickerwrapper.ticker.info["symbol"])
         self.mainview.add_table_watchlist_row(tickerwrapper=tickerwrapper)
         self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
-
+        self.mainview.add_comboBox_tickers_addRule(tickerwrapper=tickerwrapper)
+        
     def eventHandler_plainTextEdit_methodinput(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit methodinput"""
         methodArg = self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_methodinput)
@@ -112,6 +129,8 @@ class Controller(QObject):
             self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
             self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
             self.yahoostreamer.remove_liveticker(removedSymbol)
+            self.mainview.removeItem_comboBox_tickers_addRule(removedSymbol)
+            self.mainview.deactivate_rules_from_deleted_tickers(removedSymbol=removedSymbol)
 
     def eventHandler_table_analysis_delete_row(self):
         """Eventhandler, which is called if Delete button is pressed if a row is selected in table analysis"""
@@ -141,14 +160,36 @@ class Controller(QObject):
         file_path = self.mainview.create_watchlist()
         self.model.watchlistfile.set_watchlistfile(file_path)
         self.model.watchlistfile.flag_watchlist_selected = True
+        
+    def eventHandler_table_rules_delete_row(self) -> None:
+        """Eventhandler, which is called if Delete button is pressed if a row is selected in table watchlist
+            It does the following steps:
+            1. gets selected symbol from table watchlist
+            2. removes row in table watchlist
+            3. removes tickerwrapper in Model (tickerlist, watchlistfile, liveticker)"""
+        if self.mainview.table_watchlist.rowCount():
+            [symbol, threshold, period] = self.mainview.get_selected_items_from_table_rules()
+            for rule in self.model.rules:
+                if rule.symbol == symbol and rule.threshold == threshold and rule.period == period:
+                    self.model.rules.remove(rule)
+                    self.mainview.remove_selected_row_from_table_rules()
+                    return
 
+    """Eventhandlers for notifier view"""
+    def eventHandler_plainTextEdit_createNewRule(self):
+        period = self.mainview.comboBox_period_addRule.currentText()
+        symbol = self.mainview.comboBox_tickers_addRule.currentText()
+        threshold = self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_threshold_addRule)
+        self.model.add_rule(symbol=symbol, threshold=threshold, period=period)
+        self.mainview.add_table_rules_row(symbol=symbol, threshold=threshold, period=period)
+        self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
 
     def eventFilter(self, source: QWidget, event: QEvent):
         """Eventfilter, which is the main eventloop for most eventhandlers, 
             expect eventhandlers related to Qwidgets (e.g. button_genGraph)"""
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.mainview.plainTextEdit_addTicker:
-                self.eventHandler_plainTextEdit_searchTicker_enterPressed()
+                self.eventHandler_plainTextEdit_addTicker_enterPressed()
                 return True
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.mainview.table_watchlist:
@@ -172,7 +213,7 @@ class Controller(QObject):
                 return True
             
         #TODO: shift eventhandler for startupview to startup controller and create startupview file
-        """Eventfilters for statupview"""
+        """Eventfilters for startupview"""
         if event.type() == QEvent.MouseButtonPress:
             if source == self.mainview.button_startAppliction:
                 self.eventHandler_button_startAppliction()
@@ -184,6 +225,16 @@ class Controller(QObject):
         if event.type() == QEvent.MouseButtonPress:
             if source == self.mainview.button_createWatchlist:
                 self.eventHandler_button_createWatchlist()
+                return True
+            
+        """Eventfilters for rules"""
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
+            if source == self.mainview.plainTextEdit_threshold_addRule:
+                self.eventHandler_plainTextEdit_createNewRule()
+                return True
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
+            if source == self.mainview.table_rules:
+                self.eventHandler_table_rules_delete_row()
                 return True
 
         return super().eventFilter(source, event)
