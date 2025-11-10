@@ -14,7 +14,8 @@ class TickerWrapper:
         self.tickerhistory_currency = dict()
 
     def set_ticker_yfinance(self, symbol: str, session: requests_cache.CachedSession) -> None:
-        self.ticker = yf.Ticker(symbol, session=session)
+        ##self.ticker = yf.Ticker(symbol, session=session)  #TODO: remove code so it doesnt use session, since it shall not be used as parameter anymore. YF will handle it
+        self.ticker = yf.Ticker(symbol)
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
