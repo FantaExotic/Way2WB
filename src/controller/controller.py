@@ -5,7 +5,7 @@ from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject
 from PySide6.QtWidgets import QApplication, QWidget
 from model.historymanager import *
-from model.liveticker.ystreamer import YahooStreamer
+##from model.liveticker.ystreamer import YahooStreamer
 
 class Controller(QObject):
     def __init__(self, model: Model, mainview: Mainview, app: QApplication, graphicview: Graphicview) -> None:
@@ -16,7 +16,7 @@ class Controller(QObject):
         app.setStyle("Fusion")
         self.graphicview = graphicview
         #self.startupview = startupview
-        self.initLiveticker()
+        ##self.initLiveticker()
 
         """Install event filter for plainTextEdit"""
         #startup page
