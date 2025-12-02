@@ -22,6 +22,7 @@ jobs:
       - name: Create and activate venv
         shell: cmd
         run: |
+          cd bin
           python -m venv venv
           call venv\Scripts\activate
           pip install -r requirements.txt
