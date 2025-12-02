@@ -1,0 +1,41 @@
+name: Daily Python CI (Windows)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-python-app:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Create and activate virtual environment
+      - name: Create and activate venv
+        shell: cmd
+        run: |
+          python -m venv venv
+          call venv\Scripts\activate
+          python -m pip install --upgrade pip
+
+      # Install dependencies
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          call venv\Scripts\activate
+          pip install -r requirements.txt
+
+      # Run your Python application
+      - name: Run application
+        shell: cmd
+        run: |
+          call venv\Scripts\activate
+          python src\main.py
