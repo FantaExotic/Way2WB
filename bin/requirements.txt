@@ -5,5 +5,6 @@ PySide6_Addons==6.7.2
 PySide6_Essentials==6.7.2
 requests_cache==1.2.1
 websocket_client==1.8.0
-yfinance==0.2.66
+yfinance
 yliveticker==0.3.0
+argparse
