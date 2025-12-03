@@ -6,4 +6,5 @@
 venv
 bin/venv
 bin/build
+bin/dist
 test.py
