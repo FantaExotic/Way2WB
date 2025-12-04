@@ -11,7 +11,8 @@ REM Activate the virtual environment
 call venv\Scripts\activate
 
 REM Install dependencies
-pip install -r requirements.txt
+
+python -m pip install -r requirements.txt
 
 REM Run the main script
 python ..\src\main.py

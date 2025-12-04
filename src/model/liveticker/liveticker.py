@@ -2,18 +2,19 @@ import pandas as pd
 from model.currency import CurrencyWrapper
 from model.tickerwrapper import TickerWrapper
 import time
+import warnings
 
 class Liveticker:
 
     def __init__(self):
         self.timestamp_start = int(time.time())
+        warnings.simplefilter(action='ignore', category=FutureWarning) #TODO shift this to settingsfile
 
     def append_liveticker_to_tickerwrapper(self, msg: dict, currencywrapper: CurrencyWrapper, tickerwrapper: TickerWrapper) -> None:
         """processes received data from liveticker and appends it to tickerhistory of corresponding ticker"""
         price = msg['price']
-        timestamp_ms = msg['timestamp']
-        timestamp_s = timestamp_ms / 1000  # Convert milliseconds to seconds
-        dayVolume = msg['dayVolume']
+        timestamp_ms = msg['time']
+        timestamp_s = str(int(timestamp_ms) // 1000)  # Convert milliseconds to seconds
 
         if not self.verify_msg_valid(msg, timestamp=timestamp_s):
             return
@@ -22,7 +23,7 @@ class Liveticker:
         if tickerwrapper.verify_currency_conversion_required():
             price = currencywrapper.convert_currency_scalar(price)
 
-        new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [dayVolume], 'Dividends': [222]}  # TODO: get dividends data from liveticker! 
+        new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [-1], 'Dividends': [-1]}  # TODO: get volume and dividends data from liveticker! 
         new_data = pd.DataFrame(new_value)
         new_data.index = pd.to_datetime([timestamp_s], unit="s")
         if new_data.index.tz is None:
@@ -33,9 +34,9 @@ class Liveticker:
         new_dataframe = pd.concat([tickerwrapper.tickerhistory['1m'],new_data])
         tickerwrapper.tickerhistory['1m'] = new_dataframe
 
-    def verify_msg_valid(self, msg: dict, timestamp: int):
+    def verify_msg_valid(self, msg: dict, timestamp: str):
         #TODO: create class to handle liveticker for each ticker individually. Update self.timestamp_start for each ticker individually!
-        if timestamp >= self.timestamp_start:
+        if int(timestamp) >= self.timestamp_start:
             return True
         #print(f'liveticker outdated invalid for {msg["id"]}')
         return False

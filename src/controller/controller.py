@@ -5,7 +5,7 @@ from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject
 from PySide6.QtWidgets import QApplication, QWidget
 from model.historymanager import *
-##from model.liveticker.ystreamer import YahooStreamer
+from model.liveticker.ystreamer import YFStreamer
 
 class Controller(QObject):
     def __init__(self, model: Model, mainview: Mainview, app: QApplication, graphicview: Graphicview) -> None:
@@ -16,7 +16,6 @@ class Controller(QObject):
         app.setStyle("Fusion")
         self.graphicview = graphicview
         #self.startupview = startupview
-        ##self.initLiveticker()
 
         """Install event filter for plainTextEdit"""
         #startup page
@@ -50,13 +49,11 @@ class Controller(QObject):
         self.mainview.show()
         self.app.exec()
 
-    def initLiveticker(self) -> None:
-        """Init liveticker and connects eventhandler to liveticker"""
-        # Initialize the YahooStreamer with the tickers and the event handler
-        tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
-        self.yahoostreamer = YahooStreamer(tickers, self.eventHandler_liveticker_update)
-        # Start the YahooStreamer
-        self.yahoostreamer.start(reconnect=5)
+    def initYFStreamer(self, tickers) -> None:
+        """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
+        self.yahoostreamer = YFStreamer(tickers,self.eventHandler_liveticker_update)
+        self.yahoostreamer.start()
+        
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
@@ -150,6 +147,8 @@ class Controller(QObject):
     """Eventhandlers for statupview"""
     def eventHandler_button_startAppliction(self):
         self.mainview.startApplication()
+        tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
+        self.initYFStreamer(tickers)
 
     def eventHandler_button_selectWatchlist(self):
         file_path = self.mainview.select_watchlist()

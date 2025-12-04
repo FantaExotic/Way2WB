@@ -76,3 +76,25 @@ UML diagramm:
 
 zur Übersicht der Komponenten/Module/Klassen und Funktionen
 graphviz
+
+
+
+Racecondition issue due to liveticker running in different thread:
+this happens when ticker gets removed from watchlist (via gui). then it can happen that it wasnt unsubscribed yet.
+then eventHandler_liveticker_update wants to update new value in pandas dataframe from tickerwrapper, but there the tickerwrapper has already been removed
+See below error:
+
+Error in message handler: 'NVDA'
+Traceback (most recent call last):
+  File "c:\Users\denis\git_workspace\Way2WB\bin\venv\Lib\site-packages\yfinance\live.py", line 302, in listen
+    message_handler(decoded_message)
+  File "C:\Users\denis\git_workspace\Way2WB\src\controller\controller.py", line 60, in eventHandler_liveticker_update
+    self.model.update_liveticker(msg)
+  File "C:\Users\denis\git_workspace\Way2WB\src\model\model.py", line 143, in update_liveticker
+    tickerwrapper = self.tickerwrappers[symbol]
+                    ~~~~~~~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'NVDA'
+Error in message handler: 'NVDA'
+
+
+
