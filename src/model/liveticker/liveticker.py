@@ -12,7 +12,11 @@ class Liveticker:
 
     def append_liveticker_to_tickerwrapper(self, msg: dict, currencywrapper: CurrencyWrapper, tickerwrapper: TickerWrapper) -> None:
         """processes received data from liveticker and appends it to tickerhistory of corresponding ticker"""
-        price = msg['price']
+        try:
+            price = msg['price']
+        except:
+            print(f'No price was received in liveticker for {tickerwrapper.ticker.info["shortName"]}')
+            return
         timestamp_ms = msg['time']
         timestamp_s = str(int(timestamp_ms) // 1000)  # Convert milliseconds to seconds
 

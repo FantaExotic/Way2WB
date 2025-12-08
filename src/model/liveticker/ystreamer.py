@@ -2,7 +2,6 @@ from PySide6.QtCore import QThread, Signal
 import yfinance as yf
 
 class YFStreamer(QThread):
-    message_received = Signal(dict)
 
     def __init__(self, tickers, callbackfunction):
         super().__init__()
@@ -22,4 +21,4 @@ class YFStreamer(QThread):
 
     def run(self):
         self.yfWebsocket.listen(message_handler=self.callbackfunction)
-        self.setPriority(QThread.LowestPriority)
+        #self.setPriority(QThread.LowestPriority)

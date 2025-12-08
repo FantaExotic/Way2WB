@@ -2,10 +2,14 @@ from model.model import Model
 from view.mainview import Mainview
 from view.graphicview import Graphicview
 #from view.startupview import Startupview
-from PySide6.QtCore import Qt, QEvent, QObject
+from PySide6.QtCore import Qt, QEvent, QObject, QThread
 from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtGui import QCloseEvent
 from model.historymanager import *
 from model.liveticker.ystreamer import YFStreamer
+from model.liveticker.ystreamerNew import YFStreamerNew
+import warnings
+import asyncio
 
 class Controller(QObject):
     def __init__(self, model: Model, mainview: Mainview, app: QApplication, graphicview: Graphicview) -> None:
@@ -15,6 +19,9 @@ class Controller(QObject):
         self.app = app
         app.setStyle("Fusion")
         self.graphicview = graphicview
+        #self.mainview.callbackfunction = self.callback_upperlayer
+        self.yahoostreamer = None
+        self.yahoostreamer : YFStreamer
         #self.startupview = startupview
 
         """Install event filter for plainTextEdit"""
@@ -44,6 +51,11 @@ class Controller(QObject):
         self.mainview.plainTextEdit_subscribetopicinput.installEventFilter(self)
         self.mainview.checkBox_activateNotifier.installEventFilter(self)
 
+    #def callback_upperlayer(self):
+    #    warnings.simplefilter("ignore")
+    #    if self.yahoostreamer:
+    #        self.yahoostreamer.stop()
+    #    #self.app.quit()
 
     def run(self) -> None:
         self.mainview.show()
@@ -52,8 +64,10 @@ class Controller(QObject):
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
         self.yahoostreamer = YFStreamer(tickers,self.eventHandler_liveticker_update)
+        #self.yahoostreamer.add_livetickers(tickers)
         self.yahoostreamer.start()
-        
+        #self.yahoostreamer = YFStreamerNew(self.eventHandler_liveticker_update)
+        #self.yahoostreamer.start()
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
@@ -142,13 +156,17 @@ class Controller(QObject):
             Generates plot for the tickerhistories of all selected checkboxes in table watchlist"""
         selected_stocks = self.mainview.get_selected_Checkboxes()
         self.graphicview.initstaticGraph(selected_stocks)
+        # alternativ below: create new object for each graphicview.
+        #graphicview = Graphicview(self.model, self.mainview)
+        #graphicview.initstaticGraph(selected_stocks)
 
 
     """Eventhandlers for statupview"""
     def eventHandler_button_startAppliction(self):
-        self.mainview.startApplication()
-        tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
-        self.initYFStreamer(tickers)
+        if self.model.watchlistfile.flag_watchlist_selected:
+            self.mainview.startApplication()
+            tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
+            self.initYFStreamer(tickers)
 
     def eventHandler_button_selectWatchlist(self):
         file_path = self.mainview.select_watchlist()

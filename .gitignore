@@ -8,3 +8,5 @@ bin/venv
 bin/build
 bin/dist
 test.py
+src/model/liveticker/ystreamerNew.py
+src/live_myVersion.py

@@ -3,6 +3,7 @@ from view.qt.mainframe import Ui_frame_main
 from model.model import Model
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPlainTextEdit, QComboBox
+from PySide6.QtGui import QCloseEvent
 from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
@@ -34,6 +35,10 @@ class Mainview(QMainWindow, Ui_frame_main):
         super().__init__()
         self.setupUi(self)
         self.model = model
+#        self.callbackfunction = None
+#
+#    def closeEvent(self, event:QCloseEvent):
+#        self.callbackfunction()
 
     def init_mainview(self) -> None:
         self._init_statMethods()

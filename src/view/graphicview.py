@@ -14,7 +14,6 @@ class Graphicview:
     def initstaticGraph(self, symbollist: list) -> None:
         """Initialize the static graph for each symbol and apply timezone conversion to +02:00."""
         plt.figure(figsize=(10, 6))
-
         for symbol in symbollist:
             tickerwrapper = self.model.tickerwrappers[symbol]
             tickerwrapper: TickerWrapper
@@ -26,12 +25,10 @@ class Graphicview:
             if close_prices.index.tz is not None:
                 close_prices.index = close_prices.index.tz_convert(self.currentTimezone)  # Convert to +02:00 timezone
 
-            # Plot 'Close' prices for the current ticker
+            # Plot shortName for graph of dataframe
             close_prices.plot(label=f'{tickerwrapper.ticker.info["shortName"]}', linewidth=1)
-
             # If no analysis methods are selected, plot stock data only
             if len(self.model.methods) == 0:
-                self.printGraph(timezone=close_prices.index.tz)  # Display the graph with converted timezone
                 continue
 
             # Apply analysis methods (e.g., moving averages)
@@ -46,7 +43,7 @@ class Graphicview:
                 ma.plot(label=f'{tickerwrapper.ticker.info["shortName"]} - Moving Average: {methodArgs[i]}', linestyle='--', linewidth=1)
 
             # Display the graph with the updated timezone
-            self.printGraph(timezone=close_prices.index.tz)
+        self.printGraph(timezone=close_prices.index.tz)
 
 
     def printGraph(self, timezone) -> None:
