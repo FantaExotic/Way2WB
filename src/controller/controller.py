@@ -93,19 +93,19 @@ class Controller(QObject):
         if not input:
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
-        tickerwrapper = await self.model.get_tickerwrapper_yfinance(input)
+        tickerwrapper = await self.model.get_tickerwrapper_yfinance_async(input)
         if not tickerwrapper.verify_ticker_valid():
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
         if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
-        tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
+        await tickerwrapper.update_tickerhistory_async(period='5d', verify_period=False)
         if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
         period = get_shortname_from_longname(self.mainview.comboBox_period.currentText())
-        tickerwrapper.update_tickerhistory(period=period, verify_period=True)
+        await tickerwrapper.update_tickerhistory_async(period=period, verify_period=True)
         tickerwrapper.update_current_tickerhistory(period=period)
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
@@ -204,7 +204,7 @@ class Controller(QObject):
             expect eventhandlers related to Qwidgets (e.g. button_genGraph)"""
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
             if source == self.mainview.plainTextEdit_addTicker:
-                self.eventHandler_plainTextEdit_addTicker_enterPressed()
+                asyncio.create_task(self.eventHandler_plainTextEdit_addTicker_enterPressed())
                 return True
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.mainview.table_watchlist:

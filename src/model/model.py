@@ -20,9 +20,9 @@ class Model:
         #self.notifier = Notifier()
         self.rules = []
 
-    def init_model(self):
-        self.session = self.init_session()
-        self.init_tickerwrappers()
+    #def init_model(self):
+    #    self.session = self.init_session()
+    #    self.init_tickerwrappers()
 
     def init_session(self) -> requests_cache.CachedSession:
         #TODO: remove init_session(), since it became obsolete
@@ -30,35 +30,38 @@ class Model:
         session.headers['User-Agent'] = "my-program/1.0"
         return session
 
-    def init_tickerwrappers(self) -> None:
-        """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '5d'
-            will be downloaded and checked for the existence of data, which is required in table watchlist"""
-        if not self.watchlistfile.check_watchlistfile():
-            return
-        with open(self.watchlistfile.watchlistfilePath, 'r') as file:
-            data = json.load(file)
-        for each in data:
-            tickerwrapper = self.get_tickerwrapper_yfinance(each[0])  # each[0] = symbol, each[1] = shortName
-            if not tickerwrapper.verify_ticker_valid():
-                continue
-            tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
-            if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
-                continue
-            tickerwrapper.update_current_tickerhistory(period="5d")
-            tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
-            self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
+    #def init_tickerwrappers(self) -> None:
+    #    """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '5d'
+    #        will be downloaded and checked for the existence of data, which is required in table watchlist"""
+    #    if not self.watchlistfile.check_watchlistfile():
+    #        return
+    #    with open(self.watchlistfile.watchlistfilePath, 'r') as file:
+    #        data = json.load(file)
+    #    for each in data:
+    #        tickerwrapper = self.get_tickerwrapper_yfinance(each[0])  # each[0] = symbol, each[1] = shortName
+    #        if not tickerwrapper.verify_ticker_valid():
+    #            continue
+    #        tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
+    #        if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
+    #            continue
+    #        tickerwrapper.update_current_tickerhistory(period="5d")
+    #        tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
+    #        self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
 
-    def get_tickerwrapper_yfinance(self, symbol: str) -> TickerWrapper:
-        """Downloads and returns ticker for symbol in arg"""
-        tickerwrapper = TickerWrapper()
-        tickerwrapper.set_ticker_yfinance(symbol=symbol, session=self.session)
-        return tickerwrapper
+    #def get_tickerwrapper_yfinance(self, symbol: str) -> TickerWrapper:
+    #    """Downloads and returns ticker for symbol in arg"""
+    #    tickerwrapper = TickerWrapper()
+    #    tickerwrapper.set_ticker_yfinance(symbol=symbol, session=self.session)
+    #    return tickerwrapper
 
     async def get_tickerwrapper_yfinance_async(self, symbol: str) -> TickerWrapper:
         """Async version of get_tickerwrapper_yfinance"""
-        loop = asyncio.get_event_loop()
+        #loop = asyncio.get_event_loop()
+        #tickerwrapper = TickerWrapper()
+        #await loop.run_in_executor(None, tickerwrapper.set_ticker_yfinance, symbol, self.session)
+        #return tickerwrapper
         tickerwrapper = TickerWrapper()
-        await loop.run_in_executor(None, tickerwrapper.set_ticker_yfinance, symbol, self.session)
+        await tickerwrapper.set_ticker_yfinance_async(symbol=symbol, session=self.session)
         return tickerwrapper
 
     def get_currencywrapper_yfinance(self, tickerwrapper: TickerWrapper) -> CurrencyWrapper:

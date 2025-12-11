@@ -1,14 +1,18 @@
 [
     [
-        "MSFT",
-        "Microsoft Corporation"
-    ],
-    [
         "AAPL",
         "Apple Inc."
     ],
     [
         "BTC-USD",
         "Bitcoin USD"
+    ],
+    [
+        "NVDA",
+        "NVIDIA Corporation"
+    ],
+    [
+        "PEP",
+        "Pepsico, Inc."
     ]
 ]
