@@ -1,13 +1,18 @@
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread
 import yfinance as yf
 
 class YFStreamer(QThread):
 
     def __init__(self, tickers, callbackfunction):
         super().__init__()
+        #self.setObjectName("Liveticker_main_thread")
         self.yfWebsocket = yf.WebSocket()
         self.callbackfunction = callbackfunction
-        for ticker in tickers:
+        self.initTickers = tickers
+        self.initSubscriptions()
+
+    def initSubscriptions(self):
+        for ticker in self.initTickers:
             self.add_liveticker(ticker)
 
     def stop(self):

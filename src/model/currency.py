@@ -30,4 +30,4 @@ class CurrencyWrapper(TickerWrapper):
         return value * self.get_conversionrate()
     
     def get_conversionrate(self):
-        return self.ticker.fast_info["last_price"]
+        return self.ticker.fast_info_local["last_price"]

@@ -15,7 +15,7 @@ class Liveticker:
         try:
             price = msg['price']
         except:
-            print(f'No price was received in liveticker for {tickerwrapper.ticker.info["shortName"]}')
+            print(f'No price was received in liveticker for {tickerwrapper.ticker.info_local["shortName"]}')
             return
         timestamp_ms = msg['time']
         timestamp_s = str(int(timestamp_ms) // 1000)  # Convert milliseconds to seconds
@@ -32,7 +32,7 @@ class Liveticker:
         new_data.index = pd.to_datetime([timestamp_s], unit="s")
         if new_data.index.tz is None:
             new_data.index = new_data.index.tz_localize("UTC")
-        new_data.index = new_data.index.tz_convert(tickerwrapper.ticker._tz)
+        new_data.index = new_data.index.tz_convert(tickerwrapper.ticker._tz_local)
         new_data.index.name = tickerwrapper.tickerhistory['1m'].index.name
         # Update the existing tickerhistory['1m'] DataFrame with the new data
         new_dataframe = pd.concat([tickerwrapper.tickerhistory['1m'],new_data])

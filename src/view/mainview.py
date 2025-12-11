@@ -121,9 +121,9 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     """functions for startup view"""
 
-    def startApplication(self):
+    async def startApplication(self):
         if self.model.watchlistfile.flag_watchlist_selected:
-            self.model.init_model()
+            await self.model.init_model_async()
             self.init_mainview()
             self.stackedWidget.setCurrentIndex(1)
 
@@ -156,11 +156,11 @@ class Mainview(QMainWindow, Ui_frame_main):
         tickerwrapper: TickerWrapper
         for tickerwrapper in self.model.tickerwrappers.values():
             self.add_comboBox_tickers_addRule(tickerwrapper)
-        #self.comboBox_tickers_addRule.setCurrentText(tickerwrapper.ticker.info["shortName"])
+        #self.comboBox_tickers_addRule.setCurrentText(tickerwrapper.ticker.info_local["shortName"])
 
     def add_comboBox_tickers_addRule(self, tickerwrapper: TickerWrapper):
         """adds new ticker to comboBox tickers_addRule"""
-        self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info["symbol"])
+        self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info_local["symbol"])
 
     def add_table_rules_row(self, symbol: str, threshold: int, period: str):
         """ adds new row to table watchlist and sets the according values to all columns in the added row"""
@@ -197,9 +197,9 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _set_table_watchlist_row_staticItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates static items in table watchlist, which only need to be set once"""
-        self.table_watchlist.setItem(row, TableWatchlistRows.SHORTNAME.value, QTableWidgetItem(tickerwrapper.ticker.info["shortName"]))
-        self.table_watchlist.setItem(row, TableWatchlistRows.SYMBOLNAME.value, QTableWidgetItem(tickerwrapper.ticker.info["symbol"]))
-        self.table_watchlist.setItem(row, TableWatchlistRows.ISIN.value, QTableWidgetItem(tickerwrapper.ticker.isin))
+        self.table_watchlist.setItem(row, TableWatchlistRows.SHORTNAME.value, QTableWidgetItem(tickerwrapper.ticker.info_local["shortName"]))
+        self.table_watchlist.setItem(row, TableWatchlistRows.SYMBOLNAME.value, QTableWidgetItem(tickerwrapper.ticker.info_local["symbol"]))
+        self.table_watchlist.setItem(row, TableWatchlistRows.ISIN.value, QTableWidgetItem(tickerwrapper.ticker.isin_local))
         analyze_checkbox = QCheckBox()
         analyze_checkbox.setChecked(False)
         self.table_watchlist.setCellWidget(row, TableWatchlistRows.CHECKBOX.value, analyze_checkbox)

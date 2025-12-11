@@ -5,9 +5,9 @@ from view.graphicview import Graphicview
 from PySide6.QtCore import Qt, QEvent, QObject, QThread
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QCloseEvent
+from PySide6 import QtAsyncio
 from model.historymanager import *
 from model.liveticker.ystreamer import YFStreamer
-from model.liveticker.ystreamerNew import YFStreamerNew
 import warnings
 import asyncio
 
@@ -20,8 +20,8 @@ class Controller(QObject):
         app.setStyle("Fusion")
         self.graphicview = graphicview
         #self.mainview.callbackfunction = self.callback_upperlayer
-        self.yahoostreamer = None
-        self.yahoostreamer : YFStreamer
+        self.yfstreamer = None
+        self.yfstreamer : YFStreamer
         #self.startupview = startupview
 
         """Install event filter for plainTextEdit"""
@@ -53,21 +53,19 @@ class Controller(QObject):
 
     #def callback_upperlayer(self):
     #    warnings.simplefilter("ignore")
-    #    if self.yahoostreamer:
-    #        self.yahoostreamer.stop()
+    #    if self.yfstreamer:
+    #        self.yfstreamer.stop()
     #    #self.app.quit()
 
     def run(self) -> None:
         self.mainview.show()
-        self.app.exec()
+        QtAsyncio.run()
+        #self.app.exec()
 
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
-        self.yahoostreamer = YFStreamer(tickers,self.eventHandler_liveticker_update)
-        #self.yahoostreamer.add_livetickers(tickers)
-        self.yahoostreamer.start()
-        #self.yahoostreamer = YFStreamerNew(self.eventHandler_liveticker_update)
-        #self.yahoostreamer.start()
+        self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update)
+        self.yfstreamer.start()
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
@@ -82,7 +80,7 @@ class Controller(QObject):
         self.model.wrapper_convert_currencies()
         self.mainview.update_table_watchlist()
 
-    def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
+    async def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
             It does the following steps:
             1. Check if ticker is valid
@@ -95,7 +93,7 @@ class Controller(QObject):
         if not input:
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
-        tickerwrapper = self.model.get_tickerwrapper_yfinance(input)
+        tickerwrapper = await self.model.get_tickerwrapper_yfinance(input)
         if not tickerwrapper.verify_ticker_valid():
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
@@ -112,7 +110,7 @@ class Controller(QObject):
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
         self.model.add_tickerwrapper_to_tickerwrappers(tickerwrapper)
-        self.yahoostreamer.add_liveticker(tickerwrapper.ticker.info["symbol"])
+        #self.yfstreamer.add_liveticker(tickerwrapper.ticker.info_local["symbol"])
         self.mainview.add_table_watchlist_row(tickerwrapper=tickerwrapper)
         self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
         self.mainview.add_comboBox_tickers_addRule(tickerwrapper=tickerwrapper)
@@ -138,8 +136,8 @@ class Controller(QObject):
             removedSymbol = self.mainview.get_selected_symbol_from_table_watchlist()
             self.mainview.remove_selected_row_from_table_watchlist()
             self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
+            #self.yfstreamer.remove_liveticker(removedSymbol)
             self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
-            self.yahoostreamer.remove_liveticker(removedSymbol)
             self.mainview.removeItem_comboBox_tickers_addRule(removedSymbol)
             self.mainview.deactivate_rules_from_deleted_tickers(removedSymbol=removedSymbol)
 
@@ -162,11 +160,11 @@ class Controller(QObject):
 
 
     """Eventhandlers for statupview"""
-    def eventHandler_button_startAppliction(self):
+    async def eventHandler_button_startAppliction(self):
         if self.model.watchlistfile.flag_watchlist_selected:
-            self.mainview.startApplication()
-            tickers = [tickerwrapper.ticker.info['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
-            self.initYFStreamer(tickers)
+            await self.mainview.startApplication()
+            tickers = [tickerwrapper.ticker.info_local['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
+            #self.initYFStreamer(tickers)
 
     def eventHandler_button_selectWatchlist(self):
         file_path = self.mainview.select_watchlist()
@@ -233,7 +231,7 @@ class Controller(QObject):
         """Eventfilters for startupview"""
         if event.type() == QEvent.MouseButtonPress:
             if source == self.mainview.button_startAppliction:
-                self.eventHandler_button_startAppliction()
+                asyncio.create_task(self.eventHandler_button_startAppliction())
                 return True
         if event.type() == QEvent.MouseButtonPress:
             if source == self.mainview.button_selectWatchlist:

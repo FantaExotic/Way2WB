@@ -26,7 +26,7 @@ class Graphicview:
                 close_prices.index = close_prices.index.tz_convert(self.currentTimezone)  # Convert to +02:00 timezone
 
             # Plot shortName for graph of dataframe
-            close_prices.plot(label=f'{tickerwrapper.ticker.info["shortName"]}', linewidth=1)
+            close_prices.plot(label=f'{tickerwrapper.ticker.info_local["shortName"]}', linewidth=1)
             # If no analysis methods are selected, plot stock data only
             if len(self.model.methods) == 0:
                 continue
@@ -40,7 +40,7 @@ class Graphicview:
 
             # Plot each moving average
             for i, ma in enumerate(methods):
-                ma.plot(label=f'{tickerwrapper.ticker.info["shortName"]} - Moving Average: {methodArgs[i]}', linestyle='--', linewidth=1)
+                ma.plot(label=f'{tickerwrapper.ticker.info_local["shortName"]} - Moving Average: {methodArgs[i]}', linestyle='--', linewidth=1)
 
             # Display the graph with the updated timezone
         self.printGraph(timezone=close_prices.index.tz)

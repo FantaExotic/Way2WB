@@ -3,8 +3,19 @@ from model.historymanager import *
 import pandas as pd
 import time
 from datetime import datetime
+import asyncio
 
 import requests_cache
+
+class TickerLocal(yf.Ticker):
+    def __init__(self, symbol:str):
+        super().__init__(symbol)
+        self.info_local = self.info
+        self.history_metadata_local = self.history_metadata
+        self._price_history_local = self._price_history
+        self.fast_info_local = self.fast_info
+        self._tz_local = self._tz
+        self.isin_local = self.isin
 
 class TickerWrapper:
 
@@ -15,11 +26,19 @@ class TickerWrapper:
 
     def set_ticker_yfinance(self, symbol: str, session: requests_cache.CachedSession) -> None:
         ##self.ticker = yf.Ticker(symbol, session=session)  #TODO: remove code so it doesnt use session, since it shall not be used as parameter anymore. YF will handle it
-        self.ticker = yf.Ticker(symbol)
+        ticker_start_time = time.perf_counter()
+        self.ticker = TickerLocal(symbol)
+        ticker_end_time = time.perf_counter()
+        ticker_elapsed_time = ticker_end_time - ticker_start_time
+        print(f'Ticker : {ticker_elapsed_time:.6f}')
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
+        history_start_time = time.perf_counter()
         self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False) # turned off repair, because for period=2y the download takes way too long
+        history_end_time = time.perf_counter()
+        history_elapsed_time = history_end_time - history_start_time
+        print(f'History  : {history_elapsed_time:.6f}')
         self.tickerhistory_currency[interval] = self.get_currency()
 
     def get_tickerhistory_memory(self, period: Period_Tickerhistory):
@@ -45,7 +64,7 @@ class TickerWrapper:
             timestamp_today = self.tickerhistory['1m'].index
             return True
         except:
-            print(f'{self.ticker.info["symbol"]} does not contain all required data, which is needed to table_watchlist')
+            print(f'{self.ticker.info_local["symbol"]} does not contain all required data, which is needed to table_watchlist')
             return False
         
     #def verify_current_tickerhistory_valid(self) -> bool:
@@ -59,7 +78,7 @@ class TickerWrapper:
     def verify_period_valid(self, period: Period_Tickerhistory) -> bool:
         """This function verifies if the period in arg for this ticker is valid.
             Can only be called if tickerhistory for any period or interval was downloaded once for this ticker"""
-        if period in self.ticker._price_history._history_metadata['validRanges']:
+        if period in self.ticker._price_history_local._history_metadata['validRanges']:
             return True
         else:
             return False
@@ -68,8 +87,8 @@ class TickerWrapper:
         """Verifies that the downloaded ticker is a valid one (to prevent empty tickers)"""
         # trailingPegRatio is the best identifier which I found so far, improvable!
         try:
-            trailing_pe = self.ticker.info['trailingPE']
-            forward_pe = self.ticker.info['forwardPE']
+            trailing_pe = self.ticker.info_local['trailingPE']
+            forward_pe = self.ticker.info_local['forwardPE']
             income = self.ticker.financials.loc["Net Income"]
             revenue = self.ticker.financials.loc["Total Revenue"]
         except:
@@ -78,12 +97,17 @@ class TickerWrapper:
     def verify_ticker_valid(self) -> bool:
         dict_invalid_ticker = {'trailingPegRatio': None}
         #workaround with try except, in case it takes very long to get the data 
-        try:
-            if self.ticker.info != dict_invalid_ticker:
-                return True
-            else:
+        try: # couple checks to verify if ticker is valid. This checks are not perfect, but so far no consistent check was found which is always correct
+            if self.ticker.info_local == dict_invalid_ticker:
                 print("Tickerinformation invalid. Recheck entered ticker symbol!")
-                return False   
+                return False
+            if self.ticker.history_metadata_local == {}:
+                print("Tickerinformation invalid. Recheck entered ticker symbol!")
+                return False
+            if self.ticker.history_metadata_local['validRanges'] == None:
+                print("Tickerinformation invalid. Recheck entered ticker symbol!")
+                return False
+            return True
         except:
             print("Tickerinformation invalid. Recheck entered ticker symbol!")
             return False
@@ -158,7 +182,7 @@ class TickerWrapper:
             return False
         
     def get_currency(self):
-        currency = self.ticker.fast_info['currency']
+        currency = self.ticker.fast_info_local['currency']
         return currency
     
     def verify_tickerhistory_converted_already(self, currency_destination: str, interval: str):
@@ -166,3 +190,31 @@ class TickerWrapper:
             return True
         else:
             return False
+
+    async def set_ticker_yfinance_async(self, symbol: str, session: requests_cache.CachedSession) -> None:
+        """Async version of set_ticker_yfinance"""
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.set_ticker_yfinance, symbol, session)
+
+    async def set_tickerhistory_yfinance_async(self, period: Period_Tickerhistory, interval: str) -> None:
+        """Async version of set_tickerhistory_yfinance"""
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.set_tickerhistory_yfinance, period, interval)
+
+    async def overwrite_tickerhistory_async(self, period: Period_Tickerhistory, verify_period: bool) -> None:
+        """Async version of overwrite_tickerhistory"""
+        interval = assign_period_to_interval(period)
+        if not verify_period:
+            await self.set_tickerhistory_yfinance_async(period, interval)
+            return
+        if not self.verify_period_valid(period=period):
+            period = 'max'
+            interval = assign_period_to_interval(period)
+        await self.set_tickerhistory_yfinance_async(period, interval)
+
+    async def update_tickerhistory_async(self, period: Period_Tickerhistory, verify_period: bool) -> None:
+        """Async version of update_tickerhistory"""
+        largest_period_for_same_interval = get_largest_period_for_same_interval(period)
+        if self.verify_tickerhistory_exists(period=largest_period_for_same_interval):
+            return
+        await self.overwrite_tickerhistory_async(period=largest_period_for_same_interval, verify_period=verify_period)
