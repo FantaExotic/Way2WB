@@ -58,14 +58,6 @@ class TickerWrapper:
         except:
             print(f'{self.ticker.info_local["symbol"]} does not contain all required data, which is needed to table_watchlist')
             return False
-        
-    #def verify_current_tickerhistory_valid(self) -> bool:
-    #    try:
-    #        temp_current = self.tickerhistory["current"]["Close"][0]
-    #        return True
-    #    except:
-    #        print("Current history does not contain any data. Will be set invalid for this period")
-    #        return False
 
     def verify_period_valid(self, period: Period_Tickerhistory) -> bool:
         """This function verifies if the period in arg for this ticker is valid.
@@ -103,25 +95,6 @@ class TickerWrapper:
         except:
             print("Tickerinformation invalid. Recheck entered ticker symbol!")
             return False
-
-    def overwrite_tickerhistory(self, period: Period_Tickerhistory, verify_period: bool) -> None:
-        """Overwrites tickerhistory. This is needed if period='5d' shall be analyzed after startup (default period='5d')"""
-        interval = assign_period_to_interval(period)
-        if not verify_period:
-            self.set_tickerhistory_yfinance(period, interval)
-            return
-        if not self.verify_period_valid(period = period):
-            period = 'max'
-            interval = assign_period_to_interval(period)
-        self.set_tickerhistory_yfinance(period, interval) # period=max and use interval argument to avoid interval adaptation based on period
-
-    def update_tickerhistory(self, period: Period_Tickerhistory, verify_period: bool) -> None:
-        """Updates tickerhistory for predefined period with verifying if 
-        period range is valid and optionally by optimizing interval"""
-        largest_period_for_same_interval = get_largest_period_for_same_interval(period)
-        if self.verify_tickerhistory_exists(period = largest_period_for_same_interval):
-            return
-        self.overwrite_tickerhistory(period=largest_period_for_same_interval, verify_period=verify_period)
 
     def update_current_tickerhistory(self, period: Period_Tickerhistory):
         largest_period_for_same_interval = get_largest_period_for_same_interval(period)

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QCheckBox, QTableWidget, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QCheckBox, QTableWidget, QFileDialog, QProgressBar
 from view.qt.mainframe import Ui_frame_main
 from model.model import Model
 from PySide6.QtCore import Qt
@@ -35,10 +35,9 @@ class Mainview(QMainWindow, Ui_frame_main):
         super().__init__()
         self.setupUi(self)
         self.model = model
-#        self.callbackfunction = None
-#
-#    def closeEvent(self, event:QCloseEvent):
-#        self.callbackfunction()
+        self.stackedWidget.setCurrentIndex(0) # set stacked widget to startup view
+        self.progressBar_tickerhistory_periodChange.hide() # workaround to hide progressbar in tab_watchlist
+        self.progressBar_tickers.hide() # workaround to hide progressbar in startup view
 
     def init_mainview(self) -> None:
         self._init_statMethods()
@@ -128,9 +127,10 @@ class Mainview(QMainWindow, Ui_frame_main):
     #TODO: move this function to controller
     async def startApplication(self):
         if self.model.watchlistfile.flag_watchlist_selected:
-            self.progressBar_tickers.setFormat("Loading tickers . . . %p%") # set format for loading progress
+            self.progressBar_tickers.show() # set format for loading progress
             self.setEnabled(False) # Disable the main window during loading tickers
             await self.model.init_model_async(callbackfunction=self.update_progressbar_tickers)
+            self.progressBar_tickers.hide()
             self.setEnabled(True) # Enable the main window after loading tickers
             self.init_mainview()
             self.stackedWidget.setCurrentIndex(1)
@@ -201,9 +201,13 @@ class Mainview(QMainWindow, Ui_frame_main):
         if index >= 0:
             self.comboBox_tickers_addRule.removeItem(index)
 
-    def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers: int):
-        """updates progressbar for ticker download"""
+    def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
+        """updates progressbar from startup view for ticker download"""
         self.progressBar_tickers.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
+
+    def update_progressBar_tickerhistory_periodChange(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
+        """updates progressbar from analysis view for tickerhistory download during period change"""
+        self.progressBar_tickerhistory_periodChange.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
 
     """private functions"""
 

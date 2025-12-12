@@ -37,7 +37,8 @@ class Controller(QObject):
         self.mainview.table_watchlist.installEventFilter(self)        
         self.mainview.plainTextEdit_addTicker.installEventFilter(self)
         self.mainview.plainTextEdit_searchTicker.installEventFilter(self)
-        self.mainview.comboBox_period.currentTextChanged.connect(self.eventHandler_comboBox_period_change)
+        # Connect comboBox_period to async handler via wrapper
+        #self.mainview.comboBox_period.installEventFilter(self)
 
         #mainpage: Configure analysis
         self.mainview.table_analysis.installEventFilter(self)
@@ -73,13 +74,23 @@ class Controller(QObject):
         self.model.update_liveticker(msg)
         self.mainview.update_table_watchlist()  # only update history for time interval '1m'
 
-    def eventHandler_comboBox_period_change(self) -> None:
+    def wrapper_eventHandler_comboBox_period_changed(self) -> None:
+        """Wrapper for async eventHandler_comboBox_period_change. Schedules async task without blocking GUI."""
+        asyncio.create_task(self.eventHandler_comboBox_period_change())
+
+    async def eventHandler_comboBox_period_change(self) -> None:
         """Eventhandler, which is called if comboBox period value is changed"""
         period = get_shortname_from_longname(self.mainview.comboBox_period.currentText())
-        self.model.update_tickerhistories(period='5d', verify_period=False)
-        self.model.update_tickerhistories(period=period, verify_period=True)
+        self.mainview.progressBar_tickerhistory_periodChange.show() # show progressbar during tickerhistory download
+        self.mainview.setEnabled(False) # Disable the main window during tickerhistories download to prevent unintended behavior
+        # workaround: currentiter and totaliter needed to calculate overall progress during multiple calls of this function
+        # e.g. first call: currentiter=0, totaliter=2 for period='5d'; second call: currentiter=1, totaliter=2 for period=selected period
+        await self.model.update_tickerhistories(period='5d', verify_period=False, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=0, totaliter=2)
+        await self.model.update_tickerhistories(period=period, verify_period=True, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=1, totaliter=2)
         self.model.wrapper_convert_currencies()
         self.mainview.update_table_watchlist()
+        self.mainview.progressBar_tickerhistory_periodChange.hide( )# hide progressbar after tickerhistory download
+        self.mainview.setEnabled(True) # enable the main window again after tickerhistories download
 
     async def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
@@ -164,6 +175,7 @@ class Controller(QObject):
     async def eventHandler_button_startAppliction(self):
         if self.model.watchlistfile.flag_watchlist_selected:
             await self.mainview.startApplication()
+            self.mainview.comboBox_period.currentTextChanged.connect(self.wrapper_eventHandler_comboBox_period_changed) # workaround to prevent eventhandler trigger when adding periods to comboBox
             tickers = [tickerwrapper.ticker.info_local['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
             self.initYFStreamer(tickers)
 

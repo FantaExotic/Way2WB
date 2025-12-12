@@ -30,29 +30,29 @@ class Model:
         session.headers['User-Agent'] = "my-program/1.0"
         return session
 
-    #def init_tickerwrappers(self) -> None:
-    #    """initializes tickerwrappers based on data from tickerwrapperfile. Ticker and tickerhistory for period '5d'
-    #        will be downloaded and checked for the existence of data, which is required in table watchlist"""
-    #    if not self.watchlistfile.check_watchlistfile():
-    #        return
-    #    with open(self.watchlistfile.watchlistfilePath, 'r') as file:
-    #        data = json.load(file)
-    #    for each in data:
-    #        tickerwrapper = self.get_tickerwrapper_yfinance(each[0])  # each[0] = symbol, each[1] = shortName
-    #        if not tickerwrapper.verify_ticker_valid():
-    #            continue
-    #        tickerwrapper.update_tickerhistory(period='5d', verify_period=False)
-    #        if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
-    #            continue
-    #        tickerwrapper.update_current_tickerhistory(period="5d")
-    #        tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
-    #        self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
+    async def init_model_async(self, callbackfunction) -> None:
+        """Async version of init_model"""
+        self.session = self.init_session()
+        await self.init_tickerwrappers_async(callbackfunction=callbackfunction)
 
-    #def get_tickerwrapper_yfinance(self, symbol: str) -> TickerWrapper:
-    #    """Downloads and returns ticker for symbol in arg"""
-    #    tickerwrapper = TickerWrapper()
-    #    tickerwrapper.set_ticker_yfinance(symbol=symbol, session=self.session)
-    #    return tickerwrapper
+    async def init_tickerwrappers_async(self,callbackfunction) -> None:
+        """Async version of init_tickerwrappers"""
+        if not self.watchlistfile.check_watchlistfile():
+            return
+        with open(self.watchlistfile.watchlistfilePath, 'r') as file:
+            data = json.load(file)
+        
+        for index,each in enumerate(data):
+            tickerwrapper = await self.get_tickerwrapper_yfinance_async(each[0])
+            if not tickerwrapper.verify_ticker_valid():
+                continue
+            await tickerwrapper.update_tickerhistory_async(period='5d', verify_period=False)
+            if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
+                continue
+            tickerwrapper.update_current_tickerhistory(period="5d")
+            tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
+            self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
+            callbackfunction(currentTickerwrapperIndex=index+1, totalTickerwrappers=len(data))
 
     async def get_tickerwrapper_yfinance_async(self, symbol: str) -> TickerWrapper:
         """Async version of get_tickerwrapper_yfinance"""
@@ -71,11 +71,14 @@ class Model:
         currencywrapper.set_ticker_yfinance(symbol=currencywrapper.currencysymbol, session=self.session)
         return currencywrapper
 
-    def update_tickerhistories(self,period: Period_Tickerhistory, verify_period: bool) -> None:
+    async def update_tickerhistories(self,period: Period_Tickerhistory, verify_period: bool, callbackfunction_progressbarupdate, currentiter: int, totaliter: int) -> None:
         """Updates tickerhistory for all tickers in tickerlist"""
-        for tickerwrapper in self.tickerwrappers.values():
+        for index, tickerwrapper in enumerate(self.tickerwrappers.values()):
             tickerwrapper: TickerWrapper
-            tickerwrapper.update_tickerhistory(period=period, verify_period=verify_period)
+            await tickerwrapper.update_tickerhistory_async(period=period, verify_period=verify_period)
+            # workaround: currentiter and totaliter needed to calculate overall progress during multiple calls of this function
+            # e.g. first call: currentiter=0, totaliter=2 for period='5d'; second call: currentiter=1, totaliter=2 for period=selected period
+            callbackfunction_progressbarupdate(len(self.tickerwrappers.values()) * currentiter + index + 1, len(self.tickerwrappers.values()) * totaliter)
             tickerwrapper.update_current_tickerhistory(period=period)
 
     def add_tickerwrapper_to_tickerwrappers(self,tickerwrapper: TickerWrapper) -> None:
@@ -134,16 +137,6 @@ class Model:
             return True
         return False
 
-    """Wrapperfunctions for functions in Watchlistfile"""
-
-    def add_tickerinfo_to_watchlistfile(self, tickerwrapper: TickerWrapper) -> None:
-        """Wrapperfunction for add_tickerinfo_to_watchlistfile in Watchlistfile"""
-        self.watchlistfile.add_tickerinfo_to_watchlistfile(symbol=tickerwrapper.ticker.info_local["symbol"], shortName=tickerwrapper.ticker.info_local["shortName"])
-
-    def check_duplicates_in_watchlistfile(self, tickerwrapper: TickerWrapper) -> bool:
-        """Wrapperfunction for check_duplicates_in_watchlistfile in Watchlistfile"""
-        return self.watchlistfile.check_duplicates_in_watchlistfile(symbol=tickerwrapper.ticker.info_local["symbol"])
-    
     def update_liveticker(self, msg: dict):
         #tickersymbol = self.tickerwrappers[msg['id']]
         symbol = msg['id']
@@ -153,26 +146,12 @@ class Model:
         currencywrapper = self.currencywrappers[tickerwrapper.get_currency()]
         self.liveticker.append_liveticker_to_tickerwrapper(msg=msg, tickerwrapper=tickerwrapper, currencywrapper=currencywrapper)
 
-    async def init_tickerwrappers_async(self,callbackfunction) -> None:
-        """Async version of init_tickerwrappers"""
-        if not self.watchlistfile.check_watchlistfile():
-            return
-        with open(self.watchlistfile.watchlistfilePath, 'r') as file:
-            data = json.load(file)
-        
-        for index,each in enumerate(data):
-            tickerwrapper = await self.get_tickerwrapper_yfinance_async(each[0])
-            if not tickerwrapper.verify_ticker_valid():
-                continue
-            await tickerwrapper.update_tickerhistory_async(period='5d', verify_period=False)
-            if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
-                continue
-            tickerwrapper.update_current_tickerhistory(period="5d")
-            tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
-            self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
-            callbackfunction(currentTickerwrapperIndex=index+1, totalTickerwrappers=len(data))
+    """Wrapperfunctions for functions in Watchlistfile"""
 
-    async def init_model_async(self, callbackfunction) -> None:
-        """Async version of init_model"""
-        self.session = self.init_session()
-        await self.init_tickerwrappers_async(callbackfunction=callbackfunction)
+    def add_tickerinfo_to_watchlistfile(self, tickerwrapper: TickerWrapper) -> None:
+        """Wrapperfunction for add_tickerinfo_to_watchlistfile in Watchlistfile"""
+        self.watchlistfile.add_tickerinfo_to_watchlistfile(symbol=tickerwrapper.ticker.info_local["symbol"], shortName=tickerwrapper.ticker.info_local["shortName"])
+
+    def check_duplicates_in_watchlistfile(self, tickerwrapper: TickerWrapper) -> bool:
+        """Wrapperfunction for check_duplicates_in_watchlistfile in Watchlistfile"""
+        return self.watchlistfile.check_duplicates_in_watchlistfile(symbol=tickerwrapper.ticker.info_local["symbol"])
