@@ -26,19 +26,11 @@ class TickerWrapper:
 
     def set_ticker_yfinance(self, symbol: str, session: requests_cache.CachedSession) -> None:
         ##self.ticker = yf.Ticker(symbol, session=session)  #TODO: remove code so it doesnt use session, since it shall not be used as parameter anymore. YF will handle it
-        ticker_start_time = time.perf_counter()
         self.ticker = TickerLocal(symbol)
-        ticker_end_time = time.perf_counter()
-        ticker_elapsed_time = ticker_end_time - ticker_start_time
-        print(f'Ticker : {ticker_elapsed_time:.6f}')
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
-        history_start_time = time.perf_counter()
         self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False) # turned off repair, because for period=2y the download takes way too long
-        history_end_time = time.perf_counter()
-        history_elapsed_time = history_end_time - history_start_time
-        print(f'History  : {history_elapsed_time:.6f}')
         self.tickerhistory_currency[interval] = self.get_currency()
 
     def get_tickerhistory_memory(self, period: Period_Tickerhistory):

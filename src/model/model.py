@@ -153,14 +153,14 @@ class Model:
         currencywrapper = self.currencywrappers[tickerwrapper.get_currency()]
         self.liveticker.append_liveticker_to_tickerwrapper(msg=msg, tickerwrapper=tickerwrapper, currencywrapper=currencywrapper)
 
-    async def init_tickerwrappers_async(self) -> None:
+    async def init_tickerwrappers_async(self,callbackfunction) -> None:
         """Async version of init_tickerwrappers"""
         if not self.watchlistfile.check_watchlistfile():
             return
         with open(self.watchlistfile.watchlistfilePath, 'r') as file:
             data = json.load(file)
         
-        for each in data:
+        for index,each in enumerate(data):
             tickerwrapper = await self.get_tickerwrapper_yfinance_async(each[0])
             if not tickerwrapper.verify_ticker_valid():
                 continue
@@ -170,8 +170,9 @@ class Model:
             tickerwrapper.update_current_tickerhistory(period="5d")
             tickerwrapper = self.wrapper_convert_currency(tickerwrapper=tickerwrapper)
             self.add_tickerwrapper_to_tickerwrappers(tickerwrapper=tickerwrapper)
+            callbackfunction(currentTickerwrapperIndex=index+1, totalTickerwrappers=len(data))
 
-    async def init_model_async(self):
+    async def init_model_async(self, callbackfunction) -> None:
         """Async version of init_model"""
         self.session = self.init_session()
-        await self.init_tickerwrappers_async()
+        await self.init_tickerwrappers_async(callbackfunction=callbackfunction)

@@ -20,26 +20,6 @@
         "Realty Income Corporation"
     ],
     [
-        "SONY",
-        "Sony Group Corporation"
-    ],
-    [
-        "GOOG",
-        "Alphabet Inc."
-    ],
-    [
-        "PYPL",
-        "PayPal Holdings, Inc."
-    ],
-    [
-        "AME",
-        "AMETEK, Inc."
-    ],
-    [
-        "CSCO",
-        "Cisco Systems, Inc."
-    ],
-    [
         "VOW3.DE",
         "VOLKSWAGEN AG VZO O.N."
     ],
@@ -86,5 +66,9 @@
     [
         "SAP",
         "SAP  SE"
+    ],
+    [
+        "GOOG",
+        "Alphabet Inc."
     ]
 ]

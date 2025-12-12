@@ -1,1 +1,1 @@
-pyside6-uic mainframe.ui -o mainframe.py
+..\..\..\bin\venv\Scripts\pyside6-uic.exe mainframe.ui -o mainframe.py

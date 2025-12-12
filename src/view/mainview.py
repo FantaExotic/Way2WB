@@ -46,6 +46,10 @@ class Mainview(QMainWindow, Ui_frame_main):
         self._init_table_watchlist()
         self.init_notifier_and_rules()
 
+    def liveticker_enabled(self) -> bool:
+        """returns if liveticker is enabled from checkbox in mainview"""
+        return self.checkBox_activateLiveticker.isChecked()
+
     def get_selected_Checkboxes(self) -> list:
         """function to get all selected checkboxes from watchlist, which shall be used for analysis and graph generation"""
         ret = list()
@@ -121,9 +125,13 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     """functions for startup view"""
 
+    #TODO: move this function to controller
     async def startApplication(self):
         if self.model.watchlistfile.flag_watchlist_selected:
-            await self.model.init_model_async()
+            self.progressBar_tickers.setFormat("Loading tickers . . . %p%") # set format for loading progress
+            self.setEnabled(False) # Disable the main window during loading tickers
+            await self.model.init_model_async(callbackfunction=self.update_progressbar_tickers)
+            self.setEnabled(True) # Enable the main window after loading tickers
             self.init_mainview()
             self.stackedWidget.setCurrentIndex(1)
 
@@ -192,6 +200,10 @@ class Mainview(QMainWindow, Ui_frame_main):
         index = self.comboBox_tickers_addRule.findText(symbol)
         if index >= 0:
             self.comboBox_tickers_addRule.removeItem(index)
+
+    def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers: int):
+        """updates progressbar for ticker download"""
+        self.progressBar_tickers.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
 
     """private functions"""
 

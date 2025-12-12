@@ -24,6 +24,9 @@
     <bool>false</bool>
    </property>
    <widget class="QStackedWidget" name="stackedWidget">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>9</x>
@@ -39,14 +42,17 @@
      <widget class="QLabel" name="label_watchlistpath_startup">
       <property name="geometry">
        <rect>
-        <x>490</x>
+        <x>410</x>
         <y>310</y>
         <width>161</width>
         <height>161</height>
        </rect>
       </property>
       <property name="text">
-       <string/>
+       <string>No Watchlist selected</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -55,53 +61,118 @@
      <widget class="QLabel" name="label_watchlist_startup">
       <property name="geometry">
        <rect>
-        <x>540</x>
-        <y>270</y>
-        <width>51</width>
+        <x>410</x>
+        <y>280</y>
+        <width>131</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Watchlist</string>
+       <string>Watchlistpath:</string>
       </property>
      </widget>
      <widget class="QPushButton" name="button_selectWatchlist">
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>410</x>
         <y>200</y>
         <width>131</width>
         <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>Select Watchlist</string>
+       <string>Select watchlist</string>
       </property>
      </widget>
      <widget class="QPushButton" name="button_startAppliction">
       <property name="geometry">
        <rect>
         <x>450</x>
-        <y>90</y>
+        <y>60</y>
         <width>231</width>
         <height>61</height>
        </rect>
       </property>
       <property name="text">
-       <string>Start the way to Warren Buffett</string>
+       <string>Start Way2WB</string>
       </property>
      </widget>
      <widget class="QPushButton" name="button_createWatchlist">
       <property name="geometry">
        <rect>
-        <x>690</x>
-        <y>210</y>
-        <width>111</width>
-        <height>31</height>
+        <x>610</x>
+        <y>200</y>
+        <width>131</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>Create Watchlist</string>
+       <string>Create watchlist</string>
+      </property>
+     </widget>
+     <widget class="QProgressBar" name="progressBar_tickers">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>130</y>
+        <width>221</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="sizeIncrement">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+      <property name="format">
+       <string>Waiting for watchlist</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_activateLiveticker">
+      <property name="geometry">
+       <rect>
+        <x>620</x>
+        <y>280</y>
+        <width>131</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Activate liveticker</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
       </property>
      </widget>
     </widget>

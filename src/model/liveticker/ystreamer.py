@@ -3,13 +3,19 @@ import yfinance as yf
 
 class YFStreamer(QThread):
 
-    def __init__(self, tickers, callbackfunction):
+    def __init__(self, tickers, callbackfunction, liveticker_enabled: bool) -> None:
         super().__init__()
         #self.setObjectName("Liveticker_main_thread")
-        self.yfWebsocket = yf.WebSocket()
+        self.yfWebsocket = None
         self.callbackfunction = callbackfunction
         self.initTickers = tickers
-        self.initSubscriptions()
+        self.liveticker_enabled = liveticker_enabled
+
+    def start_YFStreamer(self):
+        if self.liveticker_enabled:
+            self.yfWebsocket = yf.WebSocket()
+            self.initSubscriptions()
+            self.start()
 
     def initSubscriptions(self):
         for ticker in self.initTickers:
@@ -19,10 +25,10 @@ class YFStreamer(QThread):
         self.yfWebsocket.close()
 
     def add_liveticker(self, ticker):
-        self.yfWebsocket.subscribe(ticker)
+        if self.liveticker_enabled: self.yfWebsocket.subscribe(ticker)
 
     def remove_liveticker(self, ticker):
-        self.yfWebsocket.unsubscribe(ticker)
+        if self.liveticker_enabled: self.yfWebsocket.unsubscribe(ticker)
 
     def run(self):
         self.yfWebsocket.listen(message_handler=self.callbackfunction)

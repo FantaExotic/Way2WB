@@ -50,6 +50,7 @@ class Controller(QObject):
         self.mainview.plainTextEdit_threshold_addRule.installEventFilter(self)
         self.mainview.plainTextEdit_subscribetopicinput.installEventFilter(self)
         self.mainview.checkBox_activateNotifier.installEventFilter(self)
+        self.mainview.checkBox_activateLiveticker.installEventFilter(self)
 
     #def callback_upperlayer(self):
     #    warnings.simplefilter("ignore")
@@ -64,8 +65,8 @@ class Controller(QObject):
 
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
-        self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update)
-        self.yfstreamer.start()
+        self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update, self.mainview.liveticker_enabled())
+        self.yfstreamer.start_YFStreamer()
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
@@ -110,7 +111,7 @@ class Controller(QObject):
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
         self.model.add_tickerwrapper_to_tickerwrappers(tickerwrapper)
-        #self.yfstreamer.add_liveticker(tickerwrapper.ticker.info_local["symbol"])
+        self.yfstreamer.add_liveticker(tickerwrapper.ticker.info_local["symbol"])
         self.mainview.add_table_watchlist_row(tickerwrapper=tickerwrapper)
         self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
         self.mainview.add_comboBox_tickers_addRule(tickerwrapper=tickerwrapper)
@@ -136,7 +137,7 @@ class Controller(QObject):
             removedSymbol = self.mainview.get_selected_symbol_from_table_watchlist()
             self.mainview.remove_selected_row_from_table_watchlist()
             self.model.watchlistfile.remove_ticker_from_watchlistfile(removedSymbol)
-            #self.yfstreamer.remove_liveticker(removedSymbol)
+            self.yfstreamer.remove_liveticker(removedSymbol)
             self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
             self.mainview.removeItem_comboBox_tickers_addRule(removedSymbol)
             self.mainview.deactivate_rules_from_deleted_tickers(removedSymbol=removedSymbol)
@@ -164,7 +165,7 @@ class Controller(QObject):
         if self.model.watchlistfile.flag_watchlist_selected:
             await self.mainview.startApplication()
             tickers = [tickerwrapper.ticker.info_local['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
-            #self.initYFStreamer(tickers)
+            self.initYFStreamer(tickers)
 
     def eventHandler_button_selectWatchlist(self):
         file_path = self.mainview.select_watchlist()
