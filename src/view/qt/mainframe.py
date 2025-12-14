@@ -148,6 +148,12 @@ class Ui_frame_main(object):
         self.label_methodinput = QLabel(self.tab_analysis)
         self.label_methodinput.setObjectName(u"label_methodinput")
         self.label_methodinput.setGeometry(QRect(720, 260, 111, 21))
+        self.label = QLabel(self.tab_analysis)
+        self.label.setObjectName(u"label")
+        self.label.setGeometry(QRect(680, 30, 191, 21))
+        self.comboBox_analysis_yaxisSetting = QComboBox(self.tab_analysis)
+        self.comboBox_analysis_yaxisSetting.setObjectName(u"comboBox_analysis_yaxisSetting")
+        self.comboBox_analysis_yaxisSetting.setGeometry(QRect(680, 60, 161, 31))
         self.tabWidget.addTab(self.tab_analysis, "")
         self.tab_notifier = QWidget()
         self.tab_notifier.setObjectName(u"tab_notifier")
@@ -200,7 +206,7 @@ class Ui_frame_main(object):
 
         self.retranslateUi(frame_main)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
         self.tabWidget.setCurrentIndex(0)
 
 
@@ -217,7 +223,7 @@ class Ui_frame_main(object):
         self.progressBar_tickers.setFormat(QCoreApplication.translate("frame_main", u"Loading tickers . . . %p%", None))
         self.checkBox_activateLiveticker.setText(QCoreApplication.translate("frame_main", u"Activate liveticker", None))
         ___qtablewidgetitem = self.table_watchlist.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("frame_main", u"Stockname", None));
+        ___qtablewidgetitem.setText(QCoreApplication.translate("frame_main", u"Tickername", None));
         ___qtablewidgetitem1 = self.table_watchlist.horizontalHeaderItem(1)
         ___qtablewidgetitem1.setText(QCoreApplication.translate("frame_main", u"Symbolname", None));
         ___qtablewidgetitem2 = self.table_watchlist.horizontalHeaderItem(2)
@@ -240,6 +246,7 @@ class Ui_frame_main(object):
         ___qtablewidgetitem7.setText(QCoreApplication.translate("frame_main", u"Value", None));
         self.label_method.setText(QCoreApplication.translate("frame_main", u"Statistical Method", None))
         self.label_methodinput.setText(QCoreApplication.translate("frame_main", u"Input value", None))
+        self.label.setText(QCoreApplication.translate("frame_main", u"Y-Axis Setting - display value as:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_analysis), QCoreApplication.translate("frame_main", u"Configure Analysis", None))
         self.label_subscribetopicinput.setText(QCoreApplication.translate("frame_main", u"Enter topic to send notifications", None))
         self.label_subscribetopic.setText("")

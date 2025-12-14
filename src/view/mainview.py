@@ -7,7 +7,7 @@ from PySide6.QtGui import QCloseEvent
 from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
-
+from config.configmanager import YAxisSetting
 
 class TableWatchlistRows(Enum):
     """Config for columns in table watchlist"""
@@ -41,11 +41,12 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def init_mainview(self) -> None:
         self._init_statMethods()
+        self._init_yaxisSettings()
         self._init_intervals(comboBox=self.comboBox_period)
         self._init_table_watchlist()
         self.init_notifier_and_rules()
 
-    def liveticker_enabled(self) -> bool:
+    def checkbox_liveticker_enabled(self) -> bool:
         """returns if liveticker is enabled from checkbox in mainview"""
         return self.checkBox_activateLiveticker.isChecked()
 
@@ -238,6 +239,12 @@ class Mainview(QMainWindow, Ui_frame_main):
     def _init_statMethods(self):
         """Add methods to comboBox method"""
         self.comboBox_method.addItem("Moving Average")
+
+    def _init_yaxisSettings(self):
+        """Init comboBox yaxis settings with all available settings"""
+        for setting in YAxisSetting:
+            self.comboBox_analysis_yaxisSetting.addItem(setting.value)
+        self.comboBox_analysis_yaxisSetting.setCurrentText(YAxisSetting.ABSOLUTE.value) 
 
     def _init_intervals(self, comboBox: QComboBox):
         """Init comboBox period with all periods from yfinance"""

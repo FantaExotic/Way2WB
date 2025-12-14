@@ -19,7 +19,7 @@ def main() -> None:
     mainview = Mainview(model)
     graphicview = Graphicview(model,mainview)
     controller = Controller(model,mainview,app,graphicview)
-    
+
     if args.testmode:
         print("Application running in Testmode. controller.run() will not be called")
         sys.exit(0)

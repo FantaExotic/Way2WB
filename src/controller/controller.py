@@ -66,7 +66,7 @@ class Controller(QObject):
 
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
-        self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update, self.mainview.liveticker_enabled())
+        self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update, self.mainview.checkbox_liveticker_enabled())
         self.yfstreamer.start_YFStreamer()
 
     def eventHandler_liveticker_update(self, msg) -> None:
@@ -173,6 +173,9 @@ class Controller(QObject):
 
     """Eventhandlers for statupview"""
     async def eventHandler_button_startAppliction(self):
+        #TODO: disable eventhandlers for startupview after this eventhandler has been triggered!
+        #TODO: do the same for eventhandler_period_changed!!
+        # just disabling the widgets is not enough, because eventhandlers are still active!
         if self.model.watchlistfile.flag_watchlist_selected:
             await self.mainview.startApplication()
             self.mainview.comboBox_period.currentTextChanged.connect(self.wrapper_eventHandler_comboBox_period_changed) # workaround to prevent eventhandler trigger when adding periods to comboBox

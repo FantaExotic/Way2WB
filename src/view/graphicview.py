@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from view.mainview import Mainview
 from model.tickerwrapper import TickerWrapper
 import matplotlib.dates as mdates
+from config.configmanager import YAxisSetting
 
 class Graphicview:
     def __init__(self, model: Model, mainview: Mainview):
@@ -21,12 +22,34 @@ class Graphicview:
             # Get 'Close' prices for the current ticker
             close_prices = tickerwrapper.tickerhistory["current"]['Close']
 
+            # Compute delta relative to the first 'Close' value
+            first_close = close_prices.iloc[0]
+            close_price_delta = close_prices / first_close - 1
+            close_price_pct = (close_prices / first_close - 1) * 100
+
             # Convert the timezone of the index to +02:00 (assuming the index is timezone-aware)
             if close_prices.index.tz is not None:
                 close_prices.index = close_prices.index.tz_convert(self.currentTimezone)  # Convert to +02:00 timezone
+                close_price_delta.index = close_prices.index
+                close_price_pct.index = close_prices.index
+
+            # Select data to plot based on Y-axis setting
+            y_axis_setting = self.mainview.comboBox_analysis_yaxisSetting.currentText()
+            if y_axis_setting == YAxisSetting.DELTA.value:
+                close_prices_abs_to_plot = close_price_delta
+                y_axis_label = y_axis_setting
+            elif y_axis_setting == YAxisSetting.PERCENTAGE.value:    
+                close_prices_abs_to_plot = close_price_pct
+                y_axis_label = y_axis_setting
+            elif y_axis_setting == YAxisSetting.ABSOLUTE.value:
+                close_prices_abs_to_plot = close_prices
+                y_axis_label = y_axis_setting
+            else:  # Default to ABSOLUTE
+                print("Warning: Unknown YAxisSetting checkbox value, no graphs will be created!")
+                return
 
             # Plot shortName for graph of dataframe
-            close_prices.plot(label=f'{tickerwrapper.ticker.info_local["shortName"]}', linewidth=1)
+            close_prices_abs_to_plot.plot(label=f'{tickerwrapper.ticker.info_local["shortName"]}', linewidth=1)
             # If no analysis methods are selected, plot stock data only
             if len(self.model.methods) == 0:
                 continue
@@ -35,22 +58,25 @@ class Graphicview:
             for value in self.model.methods.values():
                 methodArgs = [int(each) for each in value]  # Extract method arguments (window sizes)
 
-            # Compute moving averages for each window size
-            methods = [close_prices.rolling(window=methodArg).mean() for methodArg in methodArgs]
+            # Compute moving averages for each window size on the selected data
+            methods = [close_prices_abs_to_plot.rolling(window=methodArg).mean() for methodArg in methodArgs]
 
             # Plot each moving average
             for i, ma in enumerate(methods):
                 ma.plot(label=f'{tickerwrapper.ticker.info_local["shortName"]} - Moving Average: {methodArgs[i]}', linestyle='--', linewidth=1)
 
             # Display the graph with the updated timezone
-        self.printGraph(timezone=close_prices.index.tz)
+        self.printGraph(timezone=close_prices.index.tz, y_axis_label=y_axis_label)
 
 
-    def printGraph(self, timezone) -> None:
+    def printGraph(self, timezone, y_axis_label: str = "Price") -> None:
         """Display the graph, showing full timestamps including the timezone if available."""
         plt.title('Stock data')
 
         ax = plt.gca()  # Get the current axis
+
+        # Set the y-axis label
+        ax.set_ylabel(y_axis_label)
 
         # Set the x-axis formatter to display full timestamp including timezone
         if timezone is not None:

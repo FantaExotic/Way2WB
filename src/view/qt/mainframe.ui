@@ -36,7 +36,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page_startup">
      <widget class="QLabel" name="label_watchlistpath_startup">
@@ -210,7 +210,7 @@
         </property>
         <column>
          <property name="text">
-          <string>Stockname</string>
+          <string>Tickername</string>
          </property>
         </column>
         <column>
@@ -406,6 +406,29 @@
         </property>
         <property name="text">
          <string>Input value</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>680</x>
+          <y>30</y>
+          <width>191</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Y-Axis Setting - display value as:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="comboBox_analysis_yaxisSetting">
+        <property name="geometry">
+         <rect>
+          <x>680</x>
+          <y>60</y>
+          <width>161</width>
+          <height>31</height>
+         </rect>
         </property>
        </widget>
       </widget>
