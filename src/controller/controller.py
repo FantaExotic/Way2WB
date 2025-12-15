@@ -22,36 +22,19 @@ class Controller(QObject):
         #self.mainview.callbackfunction = self.callback_upperlayer
         self.yfstreamer = None
         self.yfstreamer : YFStreamer
-        #self.startupview = startupview
+        self.installEventFilters(self.mainview.widgets_with_eventhandler)
+    
+    """Install event filter for plainTextEdit"""
+    def installEventFilters(self, widgetlist: list[QWidget]) -> None:
+        for widget in widgetlist:
+            widget: QWidget
+            widget.installEventFilter(self)
 
-        """Install event filter for plainTextEdit"""
-        #startup page
-        self.mainview.button_startAppliction.installEventFilter(self)
-        self.mainview.button_selectWatchlist.installEventFilter(self)
-        self.mainview.button_createWatchlist.installEventFilter(self)
-
-        #mainpage
-        self.mainview.button_genGraph.installEventFilter(self)
-
-        #mainpage: Configure Watchlist
-        self.mainview.table_watchlist.installEventFilter(self)        
-        self.mainview.plainTextEdit_addTicker.installEventFilter(self)
-        self.mainview.plainTextEdit_searchTicker.installEventFilter(self)
-        # Connect comboBox_period to async handler via wrapper
-        #self.mainview.comboBox_period.installEventFilter(self)
-
-        #mainpage: Configure analysis
-        self.mainview.table_analysis.installEventFilter(self)
-        self.mainview.plainTextEdit_methodinput.installEventFilter(self)
-
-        #mainpage: Notifier and rules
-        self.mainview.table_rules.installEventFilter(self)
-        #self.mainview.comboBox_period_addRule.installEventFilter(self)
-        #self.mainview.comboBox_tickers_addRule.installEventFilter(self)
-        self.mainview.plainTextEdit_threshold_addRule.installEventFilter(self)
-        self.mainview.plainTextEdit_subscribetopicinput.installEventFilter(self)
-        self.mainview.checkBox_activateNotifier.installEventFilter(self)
-        self.mainview.checkBox_activateLiveticker.installEventFilter(self)
+    def deinstallEventFilters(self, widgetlist: list[QWidget]) -> None:
+        for widget in widgetlist:
+            widget: QWidget
+            widget.removeEventFilter(self)
+        
 
     #def callback_upperlayer(self):
     #    warnings.simplefilter("ignore")
@@ -83,6 +66,7 @@ class Controller(QObject):
         period = get_shortname_from_longname(self.mainview.comboBox_period.currentText())
         self.mainview.progressBar_tickerhistory_periodChange.show() # show progressbar during tickerhistory download
         self.mainview.setEnabled(False) # Disable the main window during tickerhistories download to prevent unintended behavior
+        self.deinstallEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during tickerhistory download to prevent unintended behavior
         # workaround: currentiter and totaliter needed to calculate overall progress during multiple calls of this function
         # e.g. first call: currentiter=0, totaliter=2 for period='5d'; second call: currentiter=1, totaliter=2 for period=selected period
         await self.model.update_tickerhistories(period='5d', verify_period=False, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=0, totaliter=2)
@@ -91,6 +75,7 @@ class Controller(QObject):
         self.mainview.update_table_watchlist()
         self.mainview.progressBar_tickerhistory_periodChange.hide( )# hide progressbar after tickerhistory download
         self.mainview.setEnabled(True) # enable the main window again after tickerhistories download
+        self.installEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during tickerhistory download to prevent unintended behavior
 
     async def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
@@ -177,7 +162,9 @@ class Controller(QObject):
         #TODO: do the same for eventhandler_period_changed!!
         # just disabling the widgets is not enough, because eventhandlers are still active!
         if self.model.watchlistfile.flag_watchlist_selected:
+            self.deinstallEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during ticker download to prevent unintended behavior
             await self.mainview.startApplication()
+            self.installEventFilters(self.mainview.widgets_with_eventhandler) # enable eventhandlers after ticker download again
             self.mainview.comboBox_period.currentTextChanged.connect(self.wrapper_eventHandler_comboBox_period_changed) # workaround to prevent eventhandler trigger when adding periods to comboBox
             tickers = [tickerwrapper.ticker.info_local['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
             self.initYFStreamer(tickers)

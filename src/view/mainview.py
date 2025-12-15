@@ -39,6 +39,32 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.progressBar_tickerhistory_periodChange.hide() # workaround to hide progressbar in tab_watchlist
         self.progressBar_tickers.hide() # workaround to hide progressbar in startup view
 
+        self.widgets_with_eventhandler = [
+        #startup page
+        self.button_startAppliction,
+        self.button_selectWatchlist,
+        self.button_createWatchlist,
+        self.checkBox_activateLiveticker,
+
+        #tab watchlist
+        self.table_watchlist,
+        self.plainTextEdit_addTicker,
+        self.plainTextEdit_searchTicker,
+        self.button_genGraph,
+
+        #tab analysis
+        self.table_analysis,
+        self.plainTextEdit_methodinput,
+
+        #tab Notifier and rules
+        self.table_rules,
+        #self.comboBox_period_addRule
+        #self.comboBox_tickers_addRule
+        self.plainTextEdit_threshold_addRule,
+        self.plainTextEdit_subscribetopicinput,
+        self.checkBox_activateNotifier
+        ]
+
     def init_mainview(self) -> None:
         self._init_statMethods()
         self._init_yaxisSettings()
