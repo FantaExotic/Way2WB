@@ -1,7 +1,6 @@
 from controller.controller import Controller
 from model.model import Model
 from view.mainview import Mainview
-#from view.startupview import Startupview
 from PySide6.QtWidgets import QApplication
 from view.graphicview import Graphicview
 import argparse

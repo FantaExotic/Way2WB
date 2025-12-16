@@ -158,9 +158,6 @@ class Controller(QObject):
 
     """Eventhandlers for statupview"""
     async def eventHandler_button_startAppliction(self):
-        #TODO: disable eventhandlers for startupview after this eventhandler has been triggered!
-        #TODO: do the same for eventhandler_period_changed!!
-        # just disabling the widgets is not enough, because eventhandlers are still active!
         if self.model.watchlistfile.flag_watchlist_selected:
             self.deinstallEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during ticker download to prevent unintended behavior
             await self.mainview.startApplication()

@@ -6,6 +6,7 @@ import warnings
 
 class Liveticker:
 
+    #TODO: do stresstest for livetickeranalysis (with many tickers). Are any updates missed?
     def __init__(self):
         self.timestamp_start = int(time.time())
         warnings.simplefilter(action='ignore', category=FutureWarning) #TODO shift this to settingsfile
@@ -27,7 +28,7 @@ class Liveticker:
         if tickerwrapper.verify_currency_conversion_required():
             price = currencywrapper.convert_currency_scalar(price)
 
-        new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [-1], 'Dividends': [-1]}  # TODO: get volume and dividends data from liveticker! 
+        new_value = {'Open': [price], 'High': [price], 'Low': [price], 'Close': [price], 'Volume': [-1], 'Dividends': [-1]}  # TODO: get volume and dividends data from liveticker (if possible)! 
         new_data = pd.DataFrame(new_value)
         new_data.index = pd.to_datetime([timestamp_s], unit="s")
         if new_data.index.tz is None:

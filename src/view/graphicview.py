@@ -11,7 +11,6 @@ class Graphicview:
         self.mainview = mainview
         self.currentTimezone = 'Etc/GMT-2'
 
-    #TODO: change self.model.tickerwrappers to symbollist, because we want to analyze only those, where hook is set at checkbox
     def initstaticGraph(self, symbollist: list) -> None:
         """Initialize the static graph for each symbol and apply timezone conversion to +02:00."""
         plt.figure(figsize=(10, 6))

@@ -1,14 +1,10 @@
 import json
 from model.tickerwrapper import TickerWrapper
-import pandas as pd
 from model.watchlistfile import Watchlistfile
 from model.currency import CurrencyWrapper
 from model.liveticker.liveticker import Liveticker
 from model.historymanager import *
 from model.rule import Rule
-
-import requests_cache
-import asyncio
 
 class Model:
     def __init__(self):
@@ -20,19 +16,8 @@ class Model:
         #self.notifier = Notifier()
         self.rules = []
 
-    #def init_model(self):
-    #    self.session = self.init_session()
-    #    self.init_tickerwrappers()
-
-    def init_session(self) -> requests_cache.CachedSession:
-        #TODO: remove init_session(), since it became obsolete
-        session = requests_cache.CachedSession('yfinance.cache')
-        session.headers['User-Agent'] = "my-program/1.0"
-        return session
-
     async def init_model_async(self, callbackfunction) -> None:
         """Async version of init_model"""
-        self.session = self.init_session()
         await self.init_tickerwrappers_async(callbackfunction=callbackfunction)
 
     async def init_tickerwrappers_async(self,callbackfunction) -> None:
@@ -56,19 +41,15 @@ class Model:
 
     async def get_tickerwrapper_yfinance_async(self, symbol: str) -> TickerWrapper:
         """Async version of get_tickerwrapper_yfinance"""
-        #loop = asyncio.get_event_loop()
-        #tickerwrapper = TickerWrapper()
-        #await loop.run_in_executor(None, tickerwrapper.set_ticker_yfinance, symbol, self.session)
-        #return tickerwrapper
         tickerwrapper = TickerWrapper()
-        await tickerwrapper.set_ticker_yfinance_async(symbol=symbol, session=self.session)
+        await tickerwrapper.set_ticker_yfinance_async(symbol=symbol)
         return tickerwrapper
 
     def get_currencywrapper_yfinance(self, tickerwrapper: TickerWrapper) -> CurrencyWrapper:
         currencywrapper = CurrencyWrapper()
         currencywrapper.currencysource = tickerwrapper.ticker.info_local['currency']
         currencywrapper.currencysymbol = f'{currencywrapper.currencysource}{currencywrapper.currencydestination}=x'
-        currencywrapper.set_ticker_yfinance(symbol=currencywrapper.currencysymbol, session=self.session)
+        currencywrapper.set_ticker_yfinance(symbol=currencywrapper.currencysymbol)
         return currencywrapper
 
     async def update_tickerhistories(self,period: Period_Tickerhistory, verify_period: bool, callbackfunction_progressbarupdate, currentiter: int, totaliter: int) -> None:

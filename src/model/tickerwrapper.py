@@ -1,11 +1,7 @@
 import yfinance as yf
 from model.historymanager import *
 import pandas as pd
-import time
-from datetime import datetime
 import asyncio
-
-import requests_cache
 
 class TickerLocal(yf.Ticker):
     def __init__(self, symbol:str):
@@ -24,8 +20,7 @@ class TickerWrapper:
         self.tickerhistory = dict()
         self.tickerhistory_currency = dict()
 
-    def set_ticker_yfinance(self, symbol: str, session: requests_cache.CachedSession) -> None:
-        ##self.ticker = yf.Ticker(symbol, session=session)  #TODO: remove code so it doesnt use session, since it shall not be used as parameter anymore. YF will handle it
+    def set_ticker_yfinance(self, symbol: str) -> None:
         self.ticker = TickerLocal(symbol)
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
@@ -156,10 +151,10 @@ class TickerWrapper:
         else:
             return False
 
-    async def set_ticker_yfinance_async(self, symbol: str, session: requests_cache.CachedSession) -> None:
+    async def set_ticker_yfinance_async(self, symbol: str) -> None:
         """Async version of set_ticker_yfinance"""
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self.set_ticker_yfinance, symbol, session)
+        await loop.run_in_executor(None, self.set_ticker_yfinance, symbol)
 
     async def set_tickerhistory_yfinance_async(self, period: Period_Tickerhistory, interval: str) -> None:
         """Async version of set_tickerhistory_yfinance"""

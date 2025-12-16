@@ -149,6 +149,10 @@ class Mainview(QMainWindow, Ui_frame_main):
          """Clears text in qPlainTextEdit"""
          qPlainTextEdit.clear()
 
+    def update_progressBar_tickerhistory_periodChange(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
+        """updates progressbar from analysis view for tickerhistory download during period change"""
+        self.progressBar_tickerhistory_periodChange.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
+
     """functions for startup view"""
 
     #TODO: move this function to controller
@@ -179,6 +183,10 @@ class Mainview(QMainWindow, Ui_frame_main):
             pass  # Do nothing, just create the empty file
         #print(file_path)
         return file_path
+    
+    def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
+        """updates progressbar from startup view for ticker download"""
+        self.progressBar_tickers.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
     
     """functions for notifier and rules"""
     
@@ -227,14 +235,6 @@ class Mainview(QMainWindow, Ui_frame_main):
         index = self.comboBox_tickers_addRule.findText(symbol)
         if index >= 0:
             self.comboBox_tickers_addRule.removeItem(index)
-
-    def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
-        """updates progressbar from startup view for ticker download"""
-        self.progressBar_tickers.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
-
-    def update_progressBar_tickerhistory_periodChange(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
-        """updates progressbar from analysis view for tickerhistory download during period change"""
-        self.progressBar_tickerhistory_periodChange.setValue(currentTickerwrapperIndex/totalTickerwrappers*100)
 
     """private functions"""
 

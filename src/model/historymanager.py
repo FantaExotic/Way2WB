@@ -1,5 +1,7 @@
 from enum import Enum
 
+#TODO: currently the possible period and intervals are hardcoded. Analyse if those infos can be parsed from the tickers!
+
 class Interval_Tickerhistory(Enum):
     MINUTE_1 = "1m"
     MINUTES_5 = "5m"
