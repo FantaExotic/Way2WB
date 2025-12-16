@@ -12,9 +12,11 @@ call venv\Scripts\activate
 
 REM Install dependencies
 
-python -m pip install -r requirements.txt
+venv\Scripts\python.exe -m pip cache purge
+
+venv\Scripts\python.exe -m pip install -r requirements.txt
 
 REM Run the main script
-python ..\src\main.py
+venv\Scripts\python.exe ..\src\main.py
 
 deactivate
