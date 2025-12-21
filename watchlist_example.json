@@ -1,22 +1,26 @@
 [
     [
+        "MBG.DE",
+        "Mercedes-Benz Group AG        N"
+    ],
+    [
         "AAPL",
         "Apple Inc."
-    ],
-    [
-        "NVDA",
-        "NVIDIA Corporation"
-    ],
-    [
-        "MSFT",
-        "Microsoft Corporation"
     ],
     [
         "P911.DE",
         "Dr. Ing. h.c. F. Porsche AG   I"
     ],
     [
-        "BTC-USD",
-        "Bitcoin USD"
+        "NVDA",
+        "NVIDIA Corporation"
+    ],
+    [
+        "META",
+        "Meta Platforms, Inc."
+    ],
+    [
+        "GOOG",
+        "Alphabet Inc."
     ]
 ]

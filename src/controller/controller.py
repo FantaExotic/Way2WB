@@ -8,7 +8,6 @@ from PySide6.QtGui import QCloseEvent
 from PySide6 import QtAsyncio
 from model.historymanager import *
 from model.liveticker.ystreamer import YFStreamer
-import warnings
 import asyncio
 
 class Controller(QObject):
@@ -34,18 +33,11 @@ class Controller(QObject):
         for widget in widgetlist:
             widget: QWidget
             widget.removeEventFilter(self)
-        
-
-    #def callback_upperlayer(self):
-    #    warnings.simplefilter("ignore")
-    #    if self.yfstreamer:
-    #        self.yfstreamer.stop()
-    #    #self.app.quit()
 
     def run(self) -> None:
         self.mainview.show()
-        QtAsyncio.run()
-        #self.app.exec()
+        QtAsyncio.run(debug = True)
+        #QtAsyncio.run()
 
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
@@ -69,13 +61,18 @@ class Controller(QObject):
         self.deinstallEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during tickerhistory download to prevent unintended behavior
         # workaround: currentiter and totaliter needed to calculate overall progress during multiple calls of this function
         # e.g. first call: currentiter=0, totaliter=2 for period='5d'; second call: currentiter=1, totaliter=2 for period=selected period
-        await self.model.update_tickerhistories(period='5d', verify_period=False, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=0, totaliter=2)
-        await self.model.update_tickerhistories(period=period, verify_period=True, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=1, totaliter=2)
+        try:
+            await self.model.update_tickerhistories(period='5d', verify_period=False, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=0, totaliter=2)
+            await self.model.update_tickerhistories(period=period, verify_period=True, callbackfunction_progressbarupdate=self.mainview.update_progressBar_tickerhistory_periodChange, currentiter=1, totaliter=2)
+        except:
+            print("Error while downloading tickerhistories after period change due to unstable connection. Old period will be restored.")
+            self.mainview.comboBox_period.setCurrentText(self.mainview.comboBox_periodBackup)
+            self._cleanup_after_period_change()
+            return
         self.model.wrapper_convert_currencies()
         self.mainview.update_table_watchlist()
-        self.mainview.progressBar_tickerhistory_periodChange.hide( )# hide progressbar after tickerhistory download
-        self.mainview.setEnabled(True) # enable the main window again after tickerhistories download
-        self.installEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during tickerhistory download to prevent unintended behavior
+        self.mainview.comboBox_periodBackup = self.mainview.comboBox_period.currentText() # update backup after successful period change
+        self._cleanup_after_period_change()
 
     async def eventHandler_plainTextEdit_addTicker_enterPressed(self) -> None:
         """Eventhandler, which is called if Enter button is pressed in plainTextEdit addTicker
@@ -90,19 +87,34 @@ class Controller(QObject):
         if not input:
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
-        tickerwrapper = await self.model.get_tickerwrapper_yfinance_async(input)
+        try:
+            tickerwrapper = await self.model.get_tickerwrapper_yfinance_async(input)
+        except:
+            self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
+            print("Error while downloading ticker. API is not reachable! Ticker will not be added.")
+            return
         if not tickerwrapper.verify_ticker_valid():
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
         if self.model.check_duplicates_in_watchlistfile(tickerwrapper):
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
-        await tickerwrapper.update_tickerhistory_async(period='5d', verify_period=False)
+        try:
+            await tickerwrapper.update_tickerhistory_async(period='5d', verify_period=False)
+        except:
+            self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
+            print("Error while downloading tickerhistory. API is not reachable! Ticker will not be added.")
+            return
         if not tickerwrapper.verify_tickerhistory_valid(period="5d"):
             self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
             return
         period = get_shortname_from_longname(self.mainview.comboBox_period.currentText())
-        await tickerwrapper.update_tickerhistory_async(period=period, verify_period=True)
+        try:
+            await tickerwrapper.update_tickerhistory_async(period=period, verify_period=True)
+        except:
+            self.mainview.clear_input_field(self.mainview.plainTextEdit_addTicker)
+            print("Error while downloading tickerhistory. API is not reachable! Ticker will not be added.")
+            return
         tickerwrapper.update_current_tickerhistory(period=period)
         tickerwrapper = self.model.wrapper_convert_currency(tickerwrapper=tickerwrapper)
         self.model.add_tickerinfo_to_watchlistfile(tickerwrapper)
@@ -160,8 +172,17 @@ class Controller(QObject):
     async def eventHandler_button_startAppliction(self):
         if self.model.watchlistfile.flag_watchlist_selected:
             self.deinstallEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during ticker download to prevent unintended behavior
-            await self.mainview.startApplication()
-            self.installEventFilters(self.mainview.widgets_with_eventhandler) # enable eventhandlers after ticker download again
+            self.mainview.setEnabled(False) # Disable the main window during loading tickers
+            self.mainview.progressBar_tickers.show() # set format for loading progress
+            try:
+                await self.model.init_model_async(callbackfunction=self.mainview.update_progressbar_tickers)
+            except:
+                print("Error while startinng application. API is not reachable! Application will not be started.")
+                self._cleanup_after_application_start()
+                return
+            self._cleanup_after_application_start()
+            self.mainview.init_mainview()
+            self.mainview.stackedWidget.setCurrentIndex(1)
             self.mainview.comboBox_period.currentTextChanged.connect(self.wrapper_eventHandler_comboBox_period_changed) # workaround to prevent eventhandler trigger when adding periods to comboBox
             tickers = [tickerwrapper.ticker.info_local['symbol'] for tickerwrapper in self.model.tickerwrappers.values()]
             self.initYFStreamer(tickers)
@@ -253,3 +274,18 @@ class Controller(QObject):
                 return True
 
         return super().eventFilter(source, event)
+    
+    def _cleanup_after_period_change(self):
+        """Restores mainview state after failed period change"""
+        self.mainview.progressBar_tickerhistory_periodChange.hide( )# hide progressbar after tickerhistory download
+        self.mainview.setEnabled(True) # enable the main window again after tickerhistories download
+        self.installEventFilters(self.mainview.widgets_with_eventhandler) # disable eventhandlers during tickerhistory download to prevent unintended behavior
+        self.mainview.progressBar_tickerhistory_periodChange.setValue(0)
+
+
+    def _cleanup_after_application_start(self): 
+        """Restores mainview state after failed ticker download""" 
+        self.mainview.progressBar_tickers.hide()
+        self.mainview.setEnabled(True) # Enable the main window after loading tickers
+        self.installEventFilters(self.mainview.widgets_with_eventhandler) # enable eventhandlers after ticker download again
+        self.mainview.progressBar_tickers.setValue(0)

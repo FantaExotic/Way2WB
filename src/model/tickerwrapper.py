@@ -6,6 +6,7 @@ import asyncio
 class TickerLocal(yf.Ticker):
     def __init__(self, symbol:str):
         super().__init__(symbol)
+        #yf.enable_debug_mode()
         self.info_local = self.info
         self.history_metadata_local = self.history_metadata
         self._price_history_local = self._price_history
@@ -25,7 +26,7 @@ class TickerWrapper:
 
     def set_tickerhistory_yfinance(self, period: Period_Tickerhistory, interval: str) -> None:
         """Downloads tickerhistory for period and interval in arg"""
-        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False) # turned off repair, because for period=2y the download takes way too long
+        self.tickerhistory[interval] = self.ticker.history(period = period, interval = interval, prepost=True, auto_adjust=False, repair=False) # turned off repair, because for period=2y the download takes way too long
         self.tickerhistory_currency[interval] = self.get_currency()
 
     def get_tickerhistory_memory(self, period: Period_Tickerhistory):
@@ -150,6 +151,8 @@ class TickerWrapper:
             return True
         else:
             return False
+        
+    """Async wrapperfunctions to ensure flawless GUI without freezing"""
 
     async def set_ticker_yfinance_async(self, symbol: str) -> None:
         """Async version of set_ticker_yfinance"""

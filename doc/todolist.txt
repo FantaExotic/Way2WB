@@ -100,3 +100,5 @@ Error in message handler: 'NVDA'
 
 - make a cyclic task, which adds the price received from liveticker to each tickerhistory for interval = 1 min.
   currently its always being written when new value is received, but then the tickerhistory for all periods which have interval = 1min are not consistent anymore.
+
+- for printing tickerhistory including dividends  

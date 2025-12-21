@@ -38,6 +38,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.stackedWidget.setCurrentIndex(0) # set stacked widget to startup view
         self.progressBar_tickerhistory_periodChange.hide() # workaround to hide progressbar in tab_watchlist
         self.progressBar_tickers.hide() # workaround to hide progressbar in startup view
+        self.comboBox_periodBackup = None
 
         self.widgets_with_eventhandler = [
         #startup page
@@ -155,17 +156,6 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     """functions for startup view"""
 
-    #TODO: move this function to controller
-    async def startApplication(self):
-        if self.model.watchlistfile.flag_watchlist_selected:
-            self.progressBar_tickers.show() # set format for loading progress
-            self.setEnabled(False) # Disable the main window during loading tickers
-            await self.model.init_model_async(callbackfunction=self.update_progressbar_tickers)
-            self.progressBar_tickers.hide()
-            self.setEnabled(True) # Enable the main window after loading tickers
-            self.init_mainview()
-            self.stackedWidget.setCurrentIndex(1)
-
     def select_watchlist(self):
                 # Open a file dialog to select a file
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Json file (*.json)")
@@ -277,6 +267,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         for period in Period_Tickerhistory_Longname:
             comboBox.addItem(period.value)
         comboBox.setCurrentText(Period_Tickerhistory_Longname.DAYS_5.value)
+        self.comboBox_periodBackup = comboBox.currentText() # backup to restore value if period change fails (e.g. due to network issues)
 
     def _get_selected_item_from_table(self, table: QTableWidget, column: TableWatchlistRows.SYMBOLNAME.value) -> QTableWidgetItem:
         """return item in selected row and column, table in arg"""
