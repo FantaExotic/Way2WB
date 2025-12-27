@@ -1,5 +1,7 @@
 from PySide6.QtCore import QThread
 import yfinance as yf
+from PySide6 import QtAsyncio
+import time
 
 class YFStreamer(QThread):
 
@@ -15,21 +17,35 @@ class YFStreamer(QThread):
         if self.liveticker_enabled:
             self.yfWebsocket = yf.WebSocket()
             self.initSubscriptions()
-            self.start()
 
     def initSubscriptions(self):
         for ticker in self.initTickers:
-            self.add_liveticker(ticker)
+            self.yfWebsocket.subscribe(ticker)
 
     def stop(self):
         self.yfWebsocket.close()
 
     def add_liveticker(self, ticker):
-        if self.liveticker_enabled: self.yfWebsocket.subscribe(ticker)
+        if self.liveticker_enabled: 
+            self.yfWebsocket.subscribe(ticker)
+            self.initTickers.append(ticker)
 
     def remove_liveticker(self, ticker):
-        if self.liveticker_enabled: self.yfWebsocket.unsubscribe(ticker)
+        if self.liveticker_enabled: 
+            self.yfWebsocket.unsubscribe(ticker)
+            self.initTickers.remove(ticker)
 
     def run(self):
-        self.yfWebsocket.listen(message_handler=self.callbackfunction)
         #self.setPriority(QThread.LowestPriority)
+        while True:
+            #prepare websocket if disconnected
+            try:
+                self.start_YFStreamer()
+                self.yfWebsocket.listen(message_handler=self.callbackfunction)
+                print("yfWebsocket closed. Restarting listener")
+            except:
+                print("yfWebsocket disconnected. Restarting listener")
+            finally:
+                print("waiting before reconnect ...")
+                time.sleep(10)
+                print("restart reconnect")

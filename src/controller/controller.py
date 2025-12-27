@@ -42,7 +42,8 @@ class Controller(QObject):
     def initYFStreamer(self, tickers) -> None:
         """Init YFStreamer, which creates new Thread to listen for incoming messages based on YFStreamer subscriptions"""
         self.yfstreamer = YFStreamer(tickers,self.eventHandler_liveticker_update, self.mainview.checkbox_liveticker_enabled())
-        self.yfstreamer.start_YFStreamer()
+        #self.yfstreamer.start_YFStreamer()
+        self.yfstreamer.start()
 
     def eventHandler_liveticker_update(self, msg) -> None:
         """Eventhandler, which is called if a message from liveticker is received"""
