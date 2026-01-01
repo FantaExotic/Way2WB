@@ -4,7 +4,7 @@ from model.watchlistfile import Watchlistfile
 from model.currency import CurrencyWrapper
 from model.liveticker.liveticker import Liveticker
 from model.historymanager import *
-from model.rule import Rule
+from model.notifier.rule import Rule, Rule_Types, Rules
 
 class Model:
     def __init__(self):
@@ -13,8 +13,7 @@ class Model:
         self.watchlistfile = Watchlistfile()
         self.methods = dict()
         self.liveticker = Liveticker()
-        #self.notifier = Notifier()
-        self.rules = []
+        self.rules = Rules()
 
     async def init_model_async(self, callbackfunction) -> None:
         """Async version of init_model"""
@@ -101,12 +100,11 @@ class Model:
             self.currencywrappers[currency] = currencywrapper
         return tickerwrapper
     
-    def add_rule(self, threshold: int, symbol: str, period: Period_Tickerhistory):
+    def add_rule(self, threshold: int, symbol: str, period: Period_Tickerhistory, ruletype: Rule_Types) -> None:
         """create rule based on input from 'notifier and rules' view and add data to model"""
         rule = Rule()
-        rule.create_rule(threshold=threshold, symbol=symbol, shortname=self.tickerwrappers[symbol].ticker.info_local["symbol"], period=period, activated=True)
-        self.rules.append(rule)
-        self.rules
+        rule.create_rule(threshold=threshold, tickerwrapper=self.tickerwrappers[symbol], period=period, ruletype=ruletype)
+        self.rules.add_to_rules(rule, symbol = symbol)
 
     def wrapper_convert_currencies(self):
         for tickerwrapper in self.tickerwrappers.values():

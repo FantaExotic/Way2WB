@@ -45,3 +45,4 @@ class Liveticker:
             return True
         #print(f'liveticker outdated invalid for {msg["id"]}')
         return False
+    

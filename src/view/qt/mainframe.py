@@ -200,6 +200,12 @@ class Ui_frame_main(object):
         self.comboBox_tickers_addRule = QComboBox(self.tab_notifier)
         self.comboBox_tickers_addRule.setObjectName(u"comboBox_tickers_addRule")
         self.comboBox_tickers_addRule.setGeometry(QRect(620, 170, 181, 31))
+        self.label_rules = QLabel(self.tab_notifier)
+        self.label_rules.setObjectName(u"label_rules")
+        self.label_rules.setGeometry(QRect(680, 210, 81, 21))
+        self.comboBox_rules = QComboBox(self.tab_notifier)
+        self.comboBox_rules.setObjectName(u"comboBox_rules")
+        self.comboBox_rules.setGeometry(QRect(650, 240, 121, 31))
         self.tabWidget.addTab(self.tab_notifier, "")
         self.stackedWidget.addWidget(self.page_main)
         frame_main.setCentralWidget(self.centralwidget)
@@ -207,7 +213,7 @@ class Ui_frame_main(object):
         self.retranslateUi(frame_main)
 
         self.stackedWidget.setCurrentIndex(1)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(frame_main)
@@ -262,6 +268,7 @@ class Ui_frame_main(object):
         self.label_period_addRule.setText(QCoreApplication.translate("frame_main", u"Time period", None))
         self.label_threshold_addRule.setText(QCoreApplication.translate("frame_main", u"Threshold", None))
         self.label_tickers_addRule.setText(QCoreApplication.translate("frame_main", u"Tickers", None))
+        self.label_rules.setText(QCoreApplication.translate("frame_main", u"Rules", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_notifier), QCoreApplication.translate("frame_main", u"Notifier and Rules", None))
     # retranslateUi
 

@@ -8,6 +8,7 @@ from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
 from config.configmanager import YAxisSetting
+from model.notifier.rule import Rule_Types, Rules, Rule
 
 class TableWatchlistRows(Enum):
     """Config for columns in table watchlist"""
@@ -62,8 +63,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         #self.comboBox_period_addRule
         #self.comboBox_tickers_addRule
         self.plainTextEdit_threshold_addRule,
-        self.plainTextEdit_subscribetopicinput,
-        self.checkBox_activateNotifier
+        self.plainTextEdit_subscribetopicinput
         ]
 
     def init_mainview(self) -> None:
@@ -182,7 +182,15 @@ class Mainview(QMainWindow, Ui_frame_main):
     
     def init_notifier_and_rules(self):
         self.init_comboBox_tickers_addRule()
+        self.init_comboBox_rules()
         self._init_intervals(comboBox=self.comboBox_period_addRule)
+        notifier_enable_default = True
+        self.checkBox_activateNotifier.setChecked(notifier_enable_default)
+        self.model.rules.notifier.activated = notifier_enable_default
+
+    #TODO:improve this, shift setting notifier activated to eventhandler, dont always set it when new liveticker update is received!!!!
+    def checkbox_notifier_enabled(self) -> bool:
+        return self.checkBox_activateNotifier.isChecked()
 
     def init_comboBox_tickers_addRule(self):
         """Init comboBox period for addRule with all periods from yfinance"""
@@ -191,18 +199,22 @@ class Mainview(QMainWindow, Ui_frame_main):
             self.add_comboBox_tickers_addRule(tickerwrapper)
         #self.comboBox_tickers_addRule.setCurrentText(tickerwrapper.ticker.info_local["shortName"])
 
+    def init_comboBox_rules(self):
+        for rule_type in Rule_Types:
+            self.comboBox_rules.addItem(rule_type.value)
+
     def add_comboBox_tickers_addRule(self, tickerwrapper: TickerWrapper):
         """adds new ticker to comboBox tickers_addRule"""
         self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info_local["symbol"])
 
     def add_table_rules_row(self, symbol: str, threshold: int, period: str):
-        """ adds new row to table watchlist and sets the according values to all columns in the added row"""
+        """ adds new row to table rules and sets the according values to all columns in the added row"""
         row = self.table_rules.rowCount()
         self.table_rules.insertRow(row)
-        self._set_table_rules_row_staticItems(symbol=symbol, threshold=threshold, period=period, row=row)
+        self._set_table_rules_row_staticItems(_symbol=symbol, threshold=threshold, period=period, row=row)
 
     def remove_selected_row_from_table_rules(self) -> None:
-        """Remove selected row from table analysis"""
+        """Remove selected row from rules analysis"""
         self._remove_selected_row_from_table(table=self.table_rules)
 
     def get_selected_items_from_table_rules(self) -> str:
@@ -286,6 +298,10 @@ class Mainview(QMainWindow, Ui_frame_main):
         for tickerwrapper in self.model.tickerwrappers.values():
             self.add_table_watchlist_row(tickerwrapper=tickerwrapper)
 
+    #def eventhandler_checkbox_rule_stateChanged(self, symbol: str, checkBox_rule_activated: QCheckBox):
+    #    rule : Rule = self.model.rules.get_rule(symbol=symbol, index=-1) # get latest (= last) added rule for this symbol
+    #    rule.activated = checkBox_rule_activated.isChecked()
+
     def _set_table_analysis_row_staticItems(self, methodArg: int, method: str, row: int):
         """Set method and methodArg for corresponding row in table analysis"""
         statistical_method_value = QTableWidgetItem()
@@ -293,15 +309,23 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, QTableWidgetItem(method))
         self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, statistical_method_value)
 
-    def _set_table_rules_row_staticItems(self, symbol: str, threshold: int, period: str, row: int):
+    def _set_table_rules_row_staticItems(self, _symbol: str, threshold: int, period: str, row: int):
         """Set rule for corresponding row in table rules"""
-        item_symbol = QTableWidgetItem(symbol)
+        item_symbol = QTableWidgetItem(_symbol)
         item_threshold = QTableWidgetItem()
         item_period = QTableWidgetItem(period)
         item_threshold.setData(Qt.EditRole, threshold)
         self.table_rules.setItem(row, TableRulesRows.SYMBOL.value, item_symbol)
         self.table_rules.setItem(row, TableRulesRows.THRESHOLD.value, item_threshold)
         self.table_rules.setItem(row, TableRulesRows.PERIOD.value, item_period)
+        #rules : Rules = self.model.rules
         item_activated = QCheckBox()
-        item_activated.setChecked(False)
+        item_activated.setCheckable(False)
+        #item_activated.setChecked(rules.enable_default) # use rules default val to determine if new checkbox shall be enabled
+        ## connect checkStateChanged signal to handler (pass row, symbol, threshold, period as closure)
+        #item_activated.checkStateChanged.connect(
+        #    lambda _sym=_symbol, _comboBox= item_activated: 
+        #    self.eventhandler_checkbox_rule_stateChanged(_sym, _comboBox)
+        #)
+
         self.table_rules.setCellWidget(row, TableRulesRows.ACTIVATED.value, item_activated)

@@ -22,6 +22,10 @@ class Controller(QObject):
         self.yfstreamer = None
         self.yfstreamer : YFStreamer
         self.installEventFilters(self.mainview.widgets_with_eventhandler)
+        # connect notifier checkbox state changes to handler
+        self.mainview.checkBox_activateNotifier.checkStateChanged.connect(
+            self.eventHandler_checkBox_activateNotifier_stateChanged
+        )
     
     """Install event filter for plainTextEdit"""
     def installEventFilters(self, widgetlist: list[QWidget]) -> None:
@@ -49,6 +53,10 @@ class Controller(QObject):
         """Eventhandler, which is called if a message from liveticker is received"""
         self.model.update_liveticker(msg)
         self.mainview.update_table_watchlist()  # only update history for time interval '1m'
+        if not self.mainview.checkbox_notifier_enabled():
+            return
+        
+        self.model.rules.check_rules(symbol = msg['id'])#TODO: parse message first cleanly
 
     def wrapper_eventHandler_comboBox_period_changed(self) -> None:
         """Wrapper for async eventHandler_comboBox_period_change. Schedules async task without blocking GUI."""
@@ -149,7 +157,7 @@ class Controller(QObject):
             self.yfstreamer.remove_liveticker(removedSymbol)
             self.model.remove_tickerwrapper_from_tickerwrappers(removedSymbol)
             self.mainview.removeItem_comboBox_tickers_addRule(removedSymbol)
-            self.mainview.deactivate_rules_from_deleted_tickers(removedSymbol=removedSymbol)
+            #self.mainview.deactivate_rules_from_deleted_tickers(removedSymbol=removedSymbol)
 
     def eventHandler_table_analysis_delete_row(self):
         """Eventhandler, which is called if Delete button is pressed if a row is selected in table analysis"""
@@ -206,7 +214,7 @@ class Controller(QObject):
             3. removes tickerwrapper in Model (tickerlist, watchlistfile, liveticker)"""
         if self.mainview.table_watchlist.rowCount():
             [symbol, threshold, period] = self.mainview.get_selected_items_from_table_rules()
-            for rule in self.model.rules:
+            for rule in self.model.rules.rules:
                 if rule.symbol == symbol and rule.threshold == threshold and rule.period == period:
                     self.model.rules.remove(rule)
                     self.mainview.remove_selected_row_from_table_rules()
@@ -216,10 +224,26 @@ class Controller(QObject):
     def eventHandler_plainTextEdit_createNewRule(self):
         period = self.mainview.comboBox_period_addRule.currentText()
         symbol = self.mainview.comboBox_tickers_addRule.currentText()
-        threshold = self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_threshold_addRule)
-        self.model.add_rule(symbol=symbol, threshold=threshold, period=period)
+        try: 
+            threshold = int(self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_threshold_addRule))
+        except:
+            self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
+            print("Input for threshold is not an integer value! Rule will not be created.")
+            return
+        self.model.add_rule(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
         self.mainview.add_table_rules_row(symbol=symbol, threshold=threshold, period=period)
         self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
+
+    def eventHandler_checkBox_activateNotifier_stateChanged(self, state: int) -> None:
+        """Handle notifier checkbox state changes.
+        
+        When checkbox is checked, activate the notifier; when unchecked, deactivate it.
+        state is Qt.Checked (2) for checked, Qt.Unchecked (0) for unchecked.
+        """
+        if state != 0:  # Qt.Checked
+            self.model.rules.notifier.set_activated()
+        else:  # Qt.Unchecked
+            self.model.rules.notifier.set_deactivated()
 
     def eventFilter(self, source: QWidget, event: QEvent):
         """Eventfilter, which is the main eventloop for most eventhandlers, 
