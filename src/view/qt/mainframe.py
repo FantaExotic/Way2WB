@@ -170,8 +170,8 @@ class Ui_frame_main(object):
         self.checkBox_activateNotifier.setObjectName(u"checkBox_activateNotifier")
         self.checkBox_activateNotifier.setGeometry(QRect(650, 360, 121, 20))
         self.table_rules = QTableWidget(self.tab_notifier)
-        if (self.table_rules.columnCount() < 4):
-            self.table_rules.setColumnCount(4)
+        if (self.table_rules.columnCount() < 5):
+            self.table_rules.setColumnCount(5)
         __qtablewidgetitem8 = QTableWidgetItem()
         self.table_rules.setHorizontalHeaderItem(0, __qtablewidgetitem8)
         __qtablewidgetitem9 = QTableWidgetItem()
@@ -180,6 +180,8 @@ class Ui_frame_main(object):
         self.table_rules.setHorizontalHeaderItem(2, __qtablewidgetitem10)
         __qtablewidgetitem11 = QTableWidgetItem()
         self.table_rules.setHorizontalHeaderItem(3, __qtablewidgetitem11)
+        __qtablewidgetitem12 = QTableWidgetItem()
+        self.table_rules.setHorizontalHeaderItem(4, __qtablewidgetitem12)
         self.table_rules.setObjectName(u"table_rules")
         self.table_rules.setGeometry(QRect(0, 0, 541, 739))
         self.comboBox_period_addRule = QComboBox(self.tab_notifier)
@@ -265,6 +267,8 @@ class Ui_frame_main(object):
         ___qtablewidgetitem10.setText(QCoreApplication.translate("frame_main", u"Tickers", None));
         ___qtablewidgetitem11 = self.table_rules.horizontalHeaderItem(3)
         ___qtablewidgetitem11.setText(QCoreApplication.translate("frame_main", u"Activated", None));
+        ___qtablewidgetitem12 = self.table_rules.horizontalHeaderItem(4)
+        ___qtablewidgetitem12.setText(QCoreApplication.translate("frame_main", u"Ruletype", None));
         self.label_period_addRule.setText(QCoreApplication.translate("frame_main", u"Time period", None))
         self.label_threshold_addRule.setText(QCoreApplication.translate("frame_main", u"Threshold", None))
         self.label_tickers_addRule.setText(QCoreApplication.translate("frame_main", u"Tickers", None))

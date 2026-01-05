@@ -100,6 +100,10 @@ class Model:
             self.currencywrappers[currency] = currencywrapper
         return tickerwrapper
     
+    def is_rule_unique(self, threshold: int, symbol: str, period: Period_Tickerhistory, ruletype: Rule_Types) -> bool:
+        pass
+        
+
     def add_rule(self, threshold: int, symbol: str, period: Period_Tickerhistory, ruletype: Rule_Types) -> None:
         """create rule based on input from 'notifier and rules' view and add data to model"""
         rule = Rule()

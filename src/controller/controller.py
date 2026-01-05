@@ -8,6 +8,7 @@ from PySide6.QtGui import QCloseEvent
 from PySide6 import QtAsyncio
 from model.historymanager import *
 from model.liveticker.ystreamer import YFStreamer
+from model.notifier.rule import Rule
 import asyncio
 
 class Controller(QObject):
@@ -161,11 +162,12 @@ class Controller(QObject):
 
     def eventHandler_table_analysis_delete_row(self):
         """Eventhandler, which is called if Delete button is pressed if a row is selected in table analysis"""
-        [method, methodArg] = self.mainview.get_selected_methodpair_from_table_analysis()
-        if not method:
-            return
-        self.mainview.remove_selected_row_from_table_analysis()
-        self.model.remove_method(methodArg, method)
+        if self.mainview.table_analysis.rowCount():
+            [method, methodArg] = self.mainview.get_selected_methodpair_from_table_analysis()
+            if not method:
+                return
+            self.mainview.remove_selected_row_from_table_analysis()
+            self.model.remove_method(methodArg, method)
 
     def eventHandler_button_genGraph_pressed(self):
         """Eventhandler, which is called if button genGraph is clicked. 
@@ -212,11 +214,15 @@ class Controller(QObject):
             1. gets selected symbol from table watchlist
             2. removes row in table watchlist
             3. removes tickerwrapper in Model (tickerlist, watchlistfile, liveticker)"""
-        if self.mainview.table_watchlist.rowCount():
-            [symbol, threshold, period] = self.mainview.get_selected_items_from_table_rules()
-            for rule in self.model.rules.rules:
-                if rule.symbol == symbol and rule.threshold == threshold and rule.period == period:
-                    self.model.rules.remove(rule)
+        if self.mainview.table_rules.rowCount():
+            [symbol, threshold, period, ruletype] = self.mainview.get_selected_items_from_table_rules()
+            if not symbol in self.model.rules.rules:
+                return
+            for index, rule in enumerate(self.model.rules.rules[symbol]):
+                rule: Rule
+                if rule.threshold == int(threshold) and rule.period == period and rule.ruletype == ruletype:   
+                    self.model.rules.rules[symbol].pop(index)
+                    #del self.model.rules[rule]
                     self.mainview.remove_selected_row_from_table_rules()
                     return
 
@@ -228,10 +234,13 @@ class Controller(QObject):
             threshold = int(self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_threshold_addRule))
         except:
             self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
-            print("Input for threshold is not an integer value! Rule will not be created.")
+            print("Input for threshold is not an integer value! New rule will not be created.")
+            return
+        if not self.model.rules.is_rule_unique(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText()):
+            print("Rule already exists! New rule will not be created.")
             return
         self.model.add_rule(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
-        self.mainview.add_table_rules_row(symbol=symbol, threshold=threshold, period=period)
+        self.mainview.add_table_rules_row(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
         self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
 
     def eventHandler_checkBox_activateNotifier_stateChanged(self, state: int) -> None:

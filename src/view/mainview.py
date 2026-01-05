@@ -30,6 +30,7 @@ class TableRulesRows(Enum):
     THRESHOLD = 1
     SYMBOL = 2
     ACTIVATED = 3
+    RULETYPE = 4
 
 class Mainview(QMainWindow, Ui_frame_main):
     def __init__(self, model: Model):
@@ -207,11 +208,11 @@ class Mainview(QMainWindow, Ui_frame_main):
         """adds new ticker to comboBox tickers_addRule"""
         self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info_local["symbol"])
 
-    def add_table_rules_row(self, symbol: str, threshold: int, period: str):
+    def add_table_rules_row(self, symbol: str, threshold: int, period: str, ruletype: Rule_Types):
         """ adds new row to table rules and sets the according values to all columns in the added row"""
         row = self.table_rules.rowCount()
         self.table_rules.insertRow(row)
-        self._set_table_rules_row_staticItems(_symbol=symbol, threshold=threshold, period=period, row=row)
+        self._set_table_rules_row_staticItems(_symbol=symbol, threshold=threshold, period=period, ruletype=ruletype, row=row)
 
     def remove_selected_row_from_table_rules(self) -> None:
         """Remove selected row from rules analysis"""
@@ -222,7 +223,8 @@ class Mainview(QMainWindow, Ui_frame_main):
         symbol = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.SYMBOL.value).text()
         threshold = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.THRESHOLD.value).text()
         period = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.PERIOD.value).text()
-        return [symbol, threshold, period]
+        ruletype = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.RULETYPE.value).text()
+        return [symbol, threshold, period, ruletype]
     
     def deactivate_rules_from_deleted_tickers(self, removedSymbol: str):
         for row in range(self.table_rules.rowCount()):
@@ -309,15 +311,17 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, QTableWidgetItem(method))
         self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, statistical_method_value)
 
-    def _set_table_rules_row_staticItems(self, _symbol: str, threshold: int, period: str, row: int):
+    def _set_table_rules_row_staticItems(self, _symbol: str, threshold: int, period: str, ruletype: Rule_Types, row: int):
         """Set rule for corresponding row in table rules"""
         item_symbol = QTableWidgetItem(_symbol)
         item_threshold = QTableWidgetItem()
         item_period = QTableWidgetItem(period)
+        item_ruletype = QTableWidgetItem(ruletype)
         item_threshold.setData(Qt.EditRole, threshold)
         self.table_rules.setItem(row, TableRulesRows.SYMBOL.value, item_symbol)
         self.table_rules.setItem(row, TableRulesRows.THRESHOLD.value, item_threshold)
         self.table_rules.setItem(row, TableRulesRows.PERIOD.value, item_period)
+        self.table_rules.setItem(row, TableRulesRows.RULETYPE.value, item_ruletype)
         #rules : Rules = self.model.rules
         item_activated = QCheckBox()
         item_activated.setCheckable(False)

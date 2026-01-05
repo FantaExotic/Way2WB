@@ -16,6 +16,7 @@ class Rule:
         self.activated = True   #TODO: implement dynamic activation of each rule in table rule
         self.ruletype: Rule_Types | None = None
 
+    #TODO: remove create_rule, and shift the function logic to __init__
     def create_rule(self, threshold: int, tickerwrapper:TickerWrapper, period: Period_Tickerhistory, ruletype: Rule_Types) -> None:
         self.threshold = threshold
         self.tickerwrapper = tickerwrapper
@@ -62,12 +63,26 @@ class Rules:
         self.enable_default = None
 
     def add_to_rules(self, rule: Rule, symbol: str) -> None:
-        if not symbol in self.rules:
-            self.rules[symbol] = list()
         self.rules[symbol].append(rule) #TODO: check if values self.rules[symbol]= list() shall be declared
 
     def get_rule(self,symbol: str, index: int) -> Rule:
         return self.rules[symbol][index]
+    
+    def is_rule_unique(self, symbol: str, threshold: int, period: Period_Tickerhistory, ruletype: Rule_Types) -> bool:
+        if not symbol in self.rules:
+            self.rules[symbol] = list()
+            return True
+        for rule in self.rules[symbol]:
+            rule: Rule
+            if not rule.period == period:
+                continue
+            if not rule.threshold == threshold:
+                continue
+            if not rule.ruletype == ruletype:
+                continue
+            return False
+        return True
+
 
     def check_rules(self, symbol: str) -> None:
         if not symbol in self.rules:

@@ -514,6 +514,11 @@
           <string>Activated</string>
          </property>
         </column>
+        <column>
+         <property name="text">
+          <string>Ruletype</string>
+         </property>
+        </column>
        </widget>
        <widget class="QComboBox" name="comboBox_period_addRule">
         <property name="geometry">
