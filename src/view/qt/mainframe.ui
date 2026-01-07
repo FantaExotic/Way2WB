@@ -347,7 +347,7 @@
          <rect>
           <x>2</x>
           <y>2</y>
-          <width>541</width>
+          <width>661</width>
           <height>739</height>
          </rect>
         </property>
@@ -365,7 +365,7 @@
        <widget class="QComboBox" name="comboBox_method">
         <property name="geometry">
          <rect>
-          <x>670</x>
+          <x>720</x>
           <y>160</y>
           <width>181</width>
           <height>31</height>
@@ -375,7 +375,7 @@
        <widget class="QLabel" name="label_method">
         <property name="geometry">
          <rect>
-          <x>700</x>
+          <x>750</x>
           <y>130</y>
           <width>111</width>
           <height>21</height>
@@ -388,7 +388,7 @@
        <widget class="QPlainTextEdit" name="plainTextEdit_methodinput">
         <property name="geometry">
          <rect>
-          <x>700</x>
+          <x>750</x>
           <y>290</y>
           <width>111</width>
           <height>31</height>
@@ -398,7 +398,7 @@
        <widget class="QLabel" name="label_methodinput">
         <property name="geometry">
          <rect>
-          <x>720</x>
+          <x>770</x>
           <y>260</y>
           <width>111</width>
           <height>21</height>
@@ -411,7 +411,7 @@
        <widget class="QLabel" name="label">
         <property name="geometry">
          <rect>
-          <x>680</x>
+          <x>730</x>
           <y>30</y>
           <width>191</width>
           <height>21</height>
@@ -424,7 +424,7 @@
        <widget class="QComboBox" name="comboBox_analysis_yaxisSetting">
         <property name="geometry">
          <rect>
-          <x>680</x>
+          <x>730</x>
           <y>60</y>
           <width>161</width>
           <height>31</height>
@@ -439,7 +439,7 @@
        <widget class="QPlainTextEdit" name="plainTextEdit_subscribetopicinput">
         <property name="geometry">
          <rect>
-          <x>663</x>
+          <x>753</x>
           <y>450</y>
           <width>111</width>
           <height>31</height>
@@ -449,7 +449,7 @@
        <widget class="QLabel" name="label_subscribetopicinput">
         <property name="geometry">
          <rect>
-          <x>633</x>
+          <x>723</x>
           <y>410</y>
           <width>181</width>
           <height>31</height>
@@ -462,7 +462,7 @@
        <widget class="QLabel" name="label_subscribetopic">
         <property name="geometry">
          <rect>
-          <x>633</x>
+          <x>723</x>
           <y>500</y>
           <width>171</width>
           <height>81</height>
@@ -475,7 +475,7 @@
        <widget class="QCheckBox" name="checkBox_activateNotifier">
         <property name="geometry">
          <rect>
-          <x>650</x>
+          <x>740</x>
           <y>360</y>
           <width>121</width>
           <height>20</height>
@@ -489,9 +489,9 @@
         <property name="geometry">
          <rect>
           <x>0</x>
-          <y>0</y>
-          <width>541</width>
-          <height>739</height>
+          <y>-2</y>
+          <width>641</width>
+          <height>741</height>
          </rect>
         </property>
         <column>
@@ -511,7 +511,7 @@
         </column>
         <column>
          <property name="text">
-          <string>Activated</string>
+          <string>Triggered</string>
          </property>
         </column>
         <column>
@@ -523,7 +523,7 @@
        <widget class="QComboBox" name="comboBox_period_addRule">
         <property name="geometry">
          <rect>
-          <x>620</x>
+          <x>710</x>
           <y>30</y>
           <width>181</width>
           <height>31</height>
@@ -533,7 +533,7 @@
        <widget class="QLabel" name="label_period_addRule">
         <property name="geometry">
          <rect>
-          <x>670</x>
+          <x>760</x>
           <y>10</y>
           <width>81</width>
           <height>21</height>
@@ -546,7 +546,7 @@
        <widget class="QPlainTextEdit" name="plainTextEdit_threshold_addRule">
         <property name="geometry">
          <rect>
-          <x>650</x>
+          <x>740</x>
           <y>100</y>
           <width>111</width>
           <height>31</height>
@@ -556,7 +556,7 @@
        <widget class="QLabel" name="label_threshold_addRule">
         <property name="geometry">
          <rect>
-          <x>680</x>
+          <x>770</x>
           <y>70</y>
           <width>71</width>
           <height>31</height>
@@ -569,7 +569,7 @@
        <widget class="QLabel" name="label_tickers_addRule">
         <property name="geometry">
          <rect>
-          <x>680</x>
+          <x>770</x>
           <y>140</y>
           <width>71</width>
           <height>31</height>
@@ -582,7 +582,7 @@
        <widget class="QComboBox" name="comboBox_tickers_addRule">
         <property name="geometry">
          <rect>
-          <x>620</x>
+          <x>710</x>
           <y>170</y>
           <width>181</width>
           <height>31</height>
@@ -592,7 +592,7 @@
        <widget class="QLabel" name="label_rules">
         <property name="geometry">
          <rect>
-          <x>680</x>
+          <x>770</x>
           <y>210</y>
           <width>81</width>
           <height>21</height>
@@ -605,9 +605,9 @@
        <widget class="QComboBox" name="comboBox_rules">
         <property name="geometry">
          <rect>
-          <x>650</x>
+          <x>690</x>
           <y>240</y>
-          <width>121</width>
+          <width>221</width>
           <height>31</height>
          </rect>
         </property>

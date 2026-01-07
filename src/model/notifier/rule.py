@@ -27,7 +27,7 @@ class Rule:
         """checks if rule percentage is fulfilled for given period"""
         period_shortname = get_shortname_from_longname(self.period)
         interval = assign_period_to_interval(period_shortname)
-        currentprice = self.tickerwrapper.tickerhistory[interval]['Open'].values[-1].item()
+        currentprice = self.tickerwrapper.tickerhistory['1m']['Open'].values[-1].item()
         # Get 'Close' prices for the current ticker
         startprice = self.tickerwrapper.tickerhistory[interval]['Close'].iloc[0]
         return (currentprice/startprice-1)*100 >= self.threshold
@@ -36,23 +36,19 @@ class Rule:
         """checks if rule percentage is fulfilled for given period"""
         period_shortname = get_shortname_from_longname(self.period)
         interval = assign_period_to_interval(period_shortname)
-        currentprice = self.tickerwrapper.tickerhistory[interval]['Open'].values[-1].item()
+        currentprice = self.tickerwrapper.tickerhistory['1m']['Open'].values[-1].item()
         # Get 'Close' prices for the current ticker
         startprice = self.tickerwrapper.tickerhistory[interval]['Close'].iloc[0]
         return(currentprice/startprice-1)*100 <= -self.threshold
 
     def check_rule_abs_upperthreshold(self) -> bool:
         """checks if rule absolute is fulfilled for given tickerwrapper"""
-        period_shortname = get_shortname_from_longname(self.period)
-        interval = assign_period_to_interval(period_shortname)
-        currentprice = self.tickerwrapper.tickerhistory[interval]['Open'].values[-1].item()
+        currentprice = self.tickerwrapper.tickerhistory['1m']['Close'].values[-1].item()
         return currentprice >= self.threshold
 
     def check_rule_abs_lowerthreshold(self) -> bool:
         """checks if rule absolute is fulfilled for given tickerwrapper"""
-        period_shortname = get_shortname_from_longname(self.period)
-        interval = assign_period_to_interval(period_shortname)
-        currentprice = self.tickerwrapper.tickerhistory[interval]['Open'].values[-1].item()
+        currentprice = self.tickerwrapper.tickerhistory['1m']['Close'].values[-1].item()
         return currentprice <= self.threshold
 
 
@@ -84,26 +80,36 @@ class Rules:
         return True
 
 
-    def check_rules(self, symbol: str) -> None:
+    def check_rules(self, symbol: str) -> Rule | None:
         if not symbol in self.rules:
-            return
+            return None
         for rule in self.rules[symbol]:
             rule: Rule
             if rule.activated:
                 if rule.ruletype == Rule_Types.PCT_UPPERTHRESHOLD.value:
                     if rule.check_rule_pct_upperthreshold():
-                        print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded percentage upper threshold of {rule.threshold}% for period {rule.period}')
-                        self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded percentage upper threshold of {rule.threshold}% for period {rule.period}')
+                        return rule
                 if rule.ruletype == Rule_Types.PCT_LOWERRTHRESHOLD.value:
                     if rule.check_rule_pct_lowerthreshold():
-                        print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded percentage lower threshold of {rule.threshold}% for period {rule.period}')
-                        self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded percentage lower threshold of {rule.threshold}% for period {rule.period}')
+                        return rule
                 if rule.ruletype == Rule_Types.ABS_UPPERTHRESHOLD.value:
                     if rule.check_rule_abs_upperthreshold():
-                        print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded absolute upper threshold of {rule.threshold} for period {rule.period}')
-                        self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded absolute upper threshold of {rule.threshold} for period {rule.period}')
+                        return rule
                 if rule.ruletype == Rule_Types.ABS_LOWERTHRESHOLD.value:
                     if rule.check_rule_abs_lowerthreshold():
-                        print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded absolute lower threshold of {rule.threshold} for period {rule.period}')
-                        self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded absolute lower threshold of {rule.threshold} for period {rule.period}')
-            rule.activated = False #TODO: workaround to trigger notifier only once, because deactivating rule via GUI is currently not possible
+                        return rule
+                    
+    def trigger_rule(self, rule : Rule) -> None:
+        if rule.ruletype == Rule_Types.PCT_UPPERTHRESHOLD.value:
+            print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded percentage upper threshold of {rule.threshold}% for period {rule.period}')
+            self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded percentage upper threshold of {rule.threshold}% for period {rule.period}')
+        if rule.ruletype == Rule_Types.PCT_LOWERRTHRESHOLD.value:
+            print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded percentage lower threshold of {rule.threshold}% for period {rule.period}')
+            self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded percentage lower threshold of {rule.threshold}% for period {rule.period}')
+        if rule.ruletype == Rule_Types.ABS_UPPERTHRESHOLD.value:
+            print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded absolute upper threshold of {rule.threshold} for period {rule.period}')
+            self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded absolute upper threshold of {rule.threshold}')
+        if rule.ruletype == Rule_Types.ABS_LOWERTHRESHOLD.value:
+            print(f'Rule triggered: {rule.tickerwrapper.ticker.info_local["symbol"]} exceeded absolute lower threshold of {rule.threshold} for period {rule.period}')
+            self.notifier.send_notification(message=f'Rule triggered: {rule.tickerwrapper.ticker.info_local["shortName"]} exceeded absolute lower threshold of {rule.threshold}')
+        rule.activated = False

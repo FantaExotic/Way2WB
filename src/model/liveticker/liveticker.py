@@ -38,6 +38,7 @@ class Liveticker:
         # Update the existing tickerhistory['1m'] DataFrame with the new data
         new_dataframe = pd.concat([tickerwrapper.tickerhistory['1m'],new_data])
         tickerwrapper.tickerhistory['1m'] = new_dataframe
+        #tickerwrapper.tickerhistory['current'] = new_dataframe  # if deactivated, new data from liveticker will not be contained in graphic view
 
     def verify_msg_valid(self, msg: dict, timestamp: str):
         #TODO: create class to handle liveticker for each ticker individually. Update self.timestamp_start for each ticker individually!

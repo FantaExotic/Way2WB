@@ -9,6 +9,7 @@ from PySide6 import QtAsyncio
 from model.historymanager import *
 from model.liveticker.ystreamer import YFStreamer
 from model.notifier.rule import Rule
+from model.tickerwrapper import TickerWrapper
 import asyncio
 
 class Controller(QObject):
@@ -56,8 +57,11 @@ class Controller(QObject):
         self.mainview.update_table_watchlist()  # only update history for time interval '1m'
         if not self.mainview.checkbox_notifier_enabled():
             return
-        
-        self.model.rules.check_rules(symbol = msg['id'])#TODO: parse message first cleanly
+        symbol = msg['id']
+        rule_triggered = self.model.rules.check_rules(symbol=symbol)#TODO: parse message first cleanly
+        if not rule_triggered is None:
+            self.model.rules.trigger_rule(rule=rule_triggered)
+            self.mainview.deactivate_rules_from_deleted_tickers(rule=rule_triggered)
 
     def wrapper_eventHandler_comboBox_period_changed(self) -> None:
         """Wrapper for async eventHandler_comboBox_period_change. Schedules async task without blocking GUI."""

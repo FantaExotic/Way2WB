@@ -213,6 +213,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         row = self.table_rules.rowCount()
         self.table_rules.insertRow(row)
         self._set_table_rules_row_staticItems(_symbol=symbol, threshold=threshold, period=period, ruletype=ruletype, row=row)
+        
 
     def remove_selected_row_from_table_rules(self) -> None:
         """Remove selected row from rules analysis"""
@@ -226,12 +227,12 @@ class Mainview(QMainWindow, Ui_frame_main):
         ruletype = self._get_selected_item_from_table(table=self.table_rules, column=TableRulesRows.RULETYPE.value).text()
         return [symbol, threshold, period, ruletype]
     
-    def deactivate_rules_from_deleted_tickers(self, removedSymbol: str):
+    def deactivate_rules_from_deleted_tickers(self, rule: Rule):
         for row in range(self.table_rules.rowCount()):
             item = self.table_rules.item(row, TableRulesRows.SYMBOL.value).text()
-            if item == removedSymbol:
-                checkboxItem = self.table_rules.cellWidget(row, TableRulesRows.ACTIVATED.value)
-                checkboxItem.setChecked(False)
+            if item == rule.tickerwrapper.ticker.info_local["symbol"]:
+                item_rule_activated = self.table_rules.item(row, TableRulesRows.ACTIVATED.value)
+                item_rule_activated.setData(Qt.EditRole, "passive")
                 #TODO: add feature to grey out checkbox with setEnabled(False),
                 # but needs be enabled again if ticker will be readded to watchlist
 
@@ -244,9 +245,16 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _set_table_watchlist_row_staticItems(self, tickerwrapper: TickerWrapper, row: int): #TODO: change datatype for interval! create own datatype for available intervals
         """Updates static items in table watchlist, which only need to be set once"""
-        self.table_watchlist.setItem(row, TableWatchlistRows.SHORTNAME.value, QTableWidgetItem(tickerwrapper.ticker.info_local["shortName"]))
-        self.table_watchlist.setItem(row, TableWatchlistRows.SYMBOLNAME.value, QTableWidgetItem(tickerwrapper.ticker.info_local["symbol"]))
-        self.table_watchlist.setItem(row, TableWatchlistRows.ISIN.value, QTableWidgetItem(tickerwrapper.ticker.isin_local))
+        item_shortName = QTableWidgetItem(tickerwrapper.ticker.info_local["shortName"])
+        item_shortName.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        item_symbol = QTableWidgetItem(tickerwrapper.ticker.info_local["symbol"])
+        item_symbol.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        item_isin = QTableWidgetItem(tickerwrapper.ticker.isin_local)
+        item_isin.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+
+        self.table_watchlist.setItem(row, TableWatchlistRows.SHORTNAME.value, item_shortName)
+        self.table_watchlist.setItem(row, TableWatchlistRows.SYMBOLNAME.value, item_symbol)
+        self.table_watchlist.setItem(row, TableWatchlistRows.ISIN.value, item_isin)
         analyze_checkbox = QCheckBox()
         analyze_checkbox.setChecked(False)
         self.table_watchlist.setCellWidget(row, TableWatchlistRows.CHECKBOX.value, analyze_checkbox)
@@ -256,6 +264,7 @@ class Mainview(QMainWindow, Ui_frame_main):
         openprice = tickerwrapper.tickerhistory['1m']['Open'].values[-1].item()
         stockvalue = QTableWidgetItem() # very inefficient!
         stockvalue.setData(Qt.EditRole, openprice)
+        stockvalue.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         self.table_watchlist.setItem(row, TableWatchlistRows.CURRENTVALUE.value, stockvalue)
         stockdiff = QTableWidgetItem()
         delta_start = tickerwrapper.tickerhistory["current"]['Open'].values[0].item() #index 0 because we want difference to start of interval
@@ -264,6 +273,7 @@ class Mainview(QMainWindow, Ui_frame_main):
             delta_start = tickerwrapper.tickerhistory["current"]['Close'].values[0].item() # workaround if Open value == 0
         delta = delta_end/delta_start * 100 - 100
         stockdiff.setData(Qt.EditRole, delta)
+        stockdiff.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         self.table_watchlist.setItem(row, TableWatchlistRows.DELTAVALUE.value, stockdiff)
 
     def _init_statMethods(self):
@@ -306,30 +316,30 @@ class Mainview(QMainWindow, Ui_frame_main):
 
     def _set_table_analysis_row_staticItems(self, methodArg: int, method: str, row: int):
         """Set method and methodArg for corresponding row in table analysis"""
-        statistical_method_value = QTableWidgetItem()
-        statistical_method_value.setData(Qt.EditRole, methodArg)
-        self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, QTableWidgetItem(method))
-        self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, statistical_method_value)
+        item_statistical_method_value = QTableWidgetItem()
+        item_statistical_method_value.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        item_statistical_method_value.setData(Qt.EditRole, methodArg)
+        item_statistical_method = QTableWidgetItem(method)
+        item_statistical_method.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, item_statistical_method)
+        self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, item_statistical_method_value)
 
     def _set_table_rules_row_staticItems(self, _symbol: str, threshold: int, period: str, ruletype: Rule_Types, row: int):
         """Set rule for corresponding row in table rules"""
         item_symbol = QTableWidgetItem(_symbol)
+        item_symbol.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         item_threshold = QTableWidgetItem()
+        item_threshold.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         item_period = QTableWidgetItem(period)
+        item_period.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         item_ruletype = QTableWidgetItem(ruletype)
+        item_ruletype.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         item_threshold.setData(Qt.EditRole, threshold)
         self.table_rules.setItem(row, TableRulesRows.SYMBOL.value, item_symbol)
         self.table_rules.setItem(row, TableRulesRows.THRESHOLD.value, item_threshold)
         self.table_rules.setItem(row, TableRulesRows.PERIOD.value, item_period)
         self.table_rules.setItem(row, TableRulesRows.RULETYPE.value, item_ruletype)
         #rules : Rules = self.model.rules
-        item_activated = QCheckBox()
-        item_activated.setCheckable(False)
-        #item_activated.setChecked(rules.enable_default) # use rules default val to determine if new checkbox shall be enabled
-        ## connect checkStateChanged signal to handler (pass row, symbol, threshold, period as closure)
-        #item_activated.checkStateChanged.connect(
-        #    lambda _sym=_symbol, _comboBox= item_activated: 
-        #    self.eventhandler_checkbox_rule_stateChanged(_sym, _comboBox)
-        #)
-
-        self.table_rules.setCellWidget(row, TableRulesRows.ACTIVATED.value, item_activated)
+        item_activated = QTableWidgetItem("active")
+        item_activated.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        self.table_rules.setItem(row, TableRulesRows.ACTIVATED.value, item_activated)
