@@ -104,11 +104,12 @@ class Model:
         pass
         
 
-    def add_rule(self, threshold: int, symbol: str, period: Period_Tickerhistory, ruletype: Rule_Types) -> None:
+    def add_rule(self, threshold: int, symbol: str, period: Period_Tickerhistory, ruletype: Rule_Types) -> Rule:
         """create rule based on input from 'notifier and rules' view and add data to model"""
         rule = Rule()
         rule.create_rule(threshold=threshold, tickerwrapper=self.tickerwrappers[symbol], period=period, ruletype=ruletype)
         self.rules.add_to_rules(rule, symbol = symbol)
+        return rule
 
     def wrapper_convert_currencies(self):
         for tickerwrapper in self.tickerwrappers.values():

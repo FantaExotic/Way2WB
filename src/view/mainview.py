@@ -8,7 +8,7 @@ from model.tickerwrapper import TickerWrapper
 from model.historymanager import Period_Tickerhistory_Longname
 from enum import Enum
 from config.configmanager import YAxisSetting
-from model.notifier.rule import Rule_Types, Rules, Rule
+from model.notifier.rule import Rule_Types, Rules, Rule, Rule_States
 
 class TableWatchlistRows(Enum):
     """Config for columns in table watchlist"""
@@ -164,15 +164,19 @@ class Mainview(QMainWindow, Ui_frame_main):
             self.label_watchlistpath_startup.setText(file_path)  # Update the label with the selected file path
             #self.stackedWidget.setCurrentIndex(1)  # Switch to the main application page
         else:
-            self.label_watchlistpath_startup.setText("No Watchlist imported. Application cannot be started before loading watchlist")
+            self.label_watchlistpath_startup.setText("No Watchlist imported. Application cannot be started without a watchlist")
         return file_path
     
     def create_watchlist(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Json file (*.json)")
+        
+        if not file_path:  # User cancelled the dialog
+            self.label_watchlistpath_startup.setText("No Watchlist created. Application cannot be started without a watchlist")
+            return file_path
 
         with open(file_path, 'w') as file:
-            pass  # Do nothing, just create the empty file
-        #print(file_path)
+            file.write('[]') # predefined structure needed for empty watchlistfile
+        self.label_watchlistpath_startup.setText(file_path)
         return file_path
     
     def update_progressbar_tickers(self, currentTickerwrapperIndex: int, totalTickerwrappers) -> None:
@@ -188,6 +192,11 @@ class Mainview(QMainWindow, Ui_frame_main):
         notifier_enable_default = True
         self.checkBox_activateNotifier.setChecked(notifier_enable_default)
         self.model.rules.notifier.activated = notifier_enable_default
+        self.init_label_subscribetopic()
+
+    def init_label_subscribetopic(self):
+        descriptiontext = f'Notificiation baseurl:\n{self.model.rules.notifier.baseurl}\nNotificiation topic:\n{self.model.rules.notifier.subscriptiontopic}'
+        self.label_subscribetopic.setText(descriptiontext)
 
     #TODO:improve this, shift setting notifier activated to eventhandler, dont always set it when new liveticker update is received!!!!
     def checkbox_notifier_enabled(self) -> bool:
@@ -208,12 +217,11 @@ class Mainview(QMainWindow, Ui_frame_main):
         """adds new ticker to comboBox tickers_addRule"""
         self.comboBox_tickers_addRule.addItem(tickerwrapper.ticker.info_local["symbol"])
 
-    def add_table_rules_row(self, symbol: str, threshold: int, period: str, ruletype: Rule_Types):
+    def add_table_rules_row(self, rule: Rule):
         """ adds new row to table rules and sets the according values to all columns in the added row"""
         row = self.table_rules.rowCount()
         self.table_rules.insertRow(row)
-        self._set_table_rules_row_staticItems(_symbol=symbol, threshold=threshold, period=period, ruletype=ruletype, row=row)
-        
+        self._set_table_rules_row_staticItems(rule=rule, row=row)
 
     def remove_selected_row_from_table_rules(self) -> None:
         """Remove selected row from rules analysis"""
@@ -229,12 +237,23 @@ class Mainview(QMainWindow, Ui_frame_main):
     
     def deactivate_rules_from_deleted_tickers(self, rule: Rule):
         for row in range(self.table_rules.rowCount()):
-            item = self.table_rules.item(row, TableRulesRows.SYMBOL.value).text()
-            if item == rule.tickerwrapper.ticker.info_local["symbol"]:
-                item_rule_activated = self.table_rules.item(row, TableRulesRows.ACTIVATED.value)
-                item_rule_activated.setData(Qt.EditRole, "passive")
-                #TODO: add feature to grey out checkbox with setEnabled(False),
-                # but needs be enabled again if ticker will be readded to watchlist
+            item_symbol = self.table_rules.item(row, TableRulesRows.SYMBOL.value).text()
+            item_threshold= int(self.table_rules.item(row, TableRulesRows.THRESHOLD.value).text()) # TODO: handle threshold better, when parsing from table, it should automatically be an integer!
+            item_ruletype = self.table_rules.item(row, TableRulesRows.RULETYPE.value).text()
+            item_period = self.table_rules.item(row, TableRulesRows.PERIOD.value).text()
+            if item_period == '' or item_period == "": # workaround to ensure type is None if there is no text for column rule
+                item_period = None
+            if not item_symbol == rule.tickerwrapper.ticker.info_local["symbol"]:
+                continue
+            if not item_threshold == rule.threshold:
+                continue
+            if not item_ruletype == rule.ruletype:
+                continue
+            if not rule.period is None: #check is needed because e.g. ruletype = Absolute Upper Threshold does not have period assigned, so period=None
+                if not item_period == rule.period:
+                    continue
+            item_rule_activated = self.table_rules.item(row, TableRulesRows.ACTIVATED.value)
+            item_rule_activated.setData(Qt.EditRole, Rule_States.DEACTIVATED.value)
 
     def removeItem_comboBox_tickers_addRule(self, symbol: str):
         index = self.comboBox_tickers_addRule.findText(symbol)
@@ -324,22 +343,22 @@ class Mainview(QMainWindow, Ui_frame_main):
         self.table_analysis.setItem(row, TableAnalysisRows.METHODNAME.value, item_statistical_method)
         self.table_analysis.setItem(row, TableAnalysisRows.METHODVALUE.value, item_statistical_method_value)
 
-    def _set_table_rules_row_staticItems(self, _symbol: str, threshold: int, period: str, ruletype: Rule_Types, row: int):
+    def _set_table_rules_row_staticItems(self, rule: Rule, row: int):
         """Set rule for corresponding row in table rules"""
-        item_symbol = QTableWidgetItem(_symbol)
+        item_symbol = QTableWidgetItem(rule.tickerwrapper.ticker.info_local["symbol"])
         item_symbol.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         item_threshold = QTableWidgetItem()
         item_threshold.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-        item_period = QTableWidgetItem(period)
+        item_period = QTableWidgetItem(rule.period)
         item_period.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-        item_ruletype = QTableWidgetItem(ruletype)
+        item_ruletype = QTableWidgetItem(rule.ruletype)
         item_ruletype.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-        item_threshold.setData(Qt.EditRole, threshold)
+        item_threshold.setData(Qt.EditRole, rule.threshold)
         self.table_rules.setItem(row, TableRulesRows.SYMBOL.value, item_symbol)
         self.table_rules.setItem(row, TableRulesRows.THRESHOLD.value, item_threshold)
         self.table_rules.setItem(row, TableRulesRows.PERIOD.value, item_period)
         self.table_rules.setItem(row, TableRulesRows.RULETYPE.value, item_ruletype)
         #rules : Rules = self.model.rules
-        item_activated = QTableWidgetItem("active")
+        item_activated = QTableWidgetItem(Rule_States.ACTIVATED.value)
         item_activated.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
         self.table_rules.setItem(row, TableRulesRows.ACTIVATED.value, item_activated)

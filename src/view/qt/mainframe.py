@@ -24,7 +24,7 @@ class Ui_frame_main(object):
     def setupUi(self, frame_main):
         if not frame_main.objectName():
             frame_main.setObjectName(u"frame_main")
-        frame_main.resize(1068, 699)
+        frame_main.resize(1064, 691)
         self.centralwidget = QWidget(frame_main)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setToolTipDuration(-1)
@@ -159,13 +159,13 @@ class Ui_frame_main(object):
         self.tab_notifier.setObjectName(u"tab_notifier")
         self.plainTextEdit_subscribetopicinput = QPlainTextEdit(self.tab_notifier)
         self.plainTextEdit_subscribetopicinput.setObjectName(u"plainTextEdit_subscribetopicinput")
-        self.plainTextEdit_subscribetopicinput.setGeometry(QRect(753, 450, 111, 31))
+        self.plainTextEdit_subscribetopicinput.setGeometry(QRect(713, 450, 211, 31))
         self.label_subscribetopicinput = QLabel(self.tab_notifier)
         self.label_subscribetopicinput.setObjectName(u"label_subscribetopicinput")
-        self.label_subscribetopicinput.setGeometry(QRect(723, 410, 181, 31))
+        self.label_subscribetopicinput.setGeometry(QRect(703, 410, 241, 31))
         self.label_subscribetopic = QLabel(self.tab_notifier)
         self.label_subscribetopic.setObjectName(u"label_subscribetopic")
-        self.label_subscribetopic.setGeometry(QRect(723, 500, 171, 81))
+        self.label_subscribetopic.setGeometry(QRect(683, 500, 251, 81))
         self.checkBox_activateNotifier = QCheckBox(self.tab_notifier)
         self.checkBox_activateNotifier.setObjectName(u"checkBox_activateNotifier")
         self.checkBox_activateNotifier.setGeometry(QRect(740, 360, 121, 20))
@@ -256,7 +256,7 @@ class Ui_frame_main(object):
         self.label_methodinput.setText(QCoreApplication.translate("frame_main", u"Input value", None))
         self.label.setText(QCoreApplication.translate("frame_main", u"Y-Axis Setting - display value as:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_analysis), QCoreApplication.translate("frame_main", u"Configure Analysis", None))
-        self.label_subscribetopicinput.setText(QCoreApplication.translate("frame_main", u"Enter topic to send notifications", None))
+        self.label_subscribetopicinput.setText(QCoreApplication.translate("frame_main", u"Enter subscriptiontopic to send notifications", None))
         self.label_subscribetopic.setText("")
         self.checkBox_activateNotifier.setText(QCoreApplication.translate("frame_main", u"Activate Notifier", None))
         ___qtablewidgetitem8 = self.table_rules.horizontalHeaderItem(0)
@@ -266,7 +266,7 @@ class Ui_frame_main(object):
         ___qtablewidgetitem10 = self.table_rules.horizontalHeaderItem(2)
         ___qtablewidgetitem10.setText(QCoreApplication.translate("frame_main", u"Tickers", None));
         ___qtablewidgetitem11 = self.table_rules.horizontalHeaderItem(3)
-        ___qtablewidgetitem11.setText(QCoreApplication.translate("frame_main", u"Activated", None));
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("frame_main", u"Triggered", None));
         ___qtablewidgetitem12 = self.table_rules.horizontalHeaderItem(4)
         ___qtablewidgetitem12.setText(QCoreApplication.translate("frame_main", u"Ruletype", None));
         self.label_period_addRule.setText(QCoreApplication.translate("frame_main", u"Time period", None))

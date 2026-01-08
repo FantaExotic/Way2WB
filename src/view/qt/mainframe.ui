@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1068</width>
-    <height>699</height>
+    <width>1064</width>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -190,7 +190,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_watchlist">
        <attribute name="title">
@@ -439,9 +439,9 @@
        <widget class="QPlainTextEdit" name="plainTextEdit_subscribetopicinput">
         <property name="geometry">
          <rect>
-          <x>753</x>
+          <x>713</x>
           <y>450</y>
-          <width>111</width>
+          <width>211</width>
           <height>31</height>
          </rect>
         </property>
@@ -449,22 +449,22 @@
        <widget class="QLabel" name="label_subscribetopicinput">
         <property name="geometry">
          <rect>
-          <x>723</x>
+          <x>703</x>
           <y>410</y>
-          <width>181</width>
+          <width>241</width>
           <height>31</height>
          </rect>
         </property>
         <property name="text">
-         <string>Enter topic to send notifications</string>
+         <string>Enter subscriptiontopic to send notifications</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_subscribetopic">
         <property name="geometry">
          <rect>
-          <x>723</x>
+          <x>683</x>
           <y>500</y>
-          <width>171</width>
+          <width>251</width>
           <height>81</height>
          </rect>
         </property>
@@ -511,7 +511,7 @@
         </column>
         <column>
          <property name="text">
-          <string>Triggered</string>
+          <string>Rulestatus</string>
          </property>
         </column>
         <column>

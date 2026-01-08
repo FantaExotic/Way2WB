@@ -243,8 +243,8 @@ class Controller(QObject):
         if not self.model.rules.is_rule_unique(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText()):
             print("Rule already exists! New rule will not be created.")
             return
-        self.model.add_rule(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
-        self.mainview.add_table_rules_row(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
+        rule=self.model.add_rule(symbol=symbol, threshold=threshold, period=period, ruletype=self.mainview.comboBox_rules.currentText())
+        self.mainview.add_table_rules_row(rule=rule)
         self.mainview.clear_input_field(self.mainview.plainTextEdit_threshold_addRule)
 
     def eventHandler_checkBox_activateNotifier_stateChanged(self, state: int) -> None:
@@ -257,6 +257,15 @@ class Controller(QObject):
             self.model.rules.notifier.set_activated()
         else:  # Qt.Unchecked
             self.model.rules.notifier.set_deactivated()
+
+    def eventhandler_plainTextEdit_subscribetopicinput(self) -> None:
+        subscriptiontopic = self.mainview.get_plaintextedit_input(self.mainview.plainTextEdit_subscribetopicinput)
+        if not subscriptiontopic:
+            self.mainview.clear_input_field(self.mainview.plainTextEdit_subscribetopicinput)
+            return
+        self.model.rules.notifier.subscriptiontopic = subscriptiontopic
+        self.mainview.init_label_subscribetopic()
+        self.mainview.clear_input_field(self.mainview.plainTextEdit_subscribetopicinput)
 
     def eventFilter(self, source: QWidget, event: QEvent):
         """Eventfilter, which is the main eventloop for most eventhandlers, 
@@ -309,6 +318,10 @@ class Controller(QObject):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Delete:
             if source == self.mainview.table_rules:
                 self.eventHandler_table_rules_delete_row()
+                return True
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Return:
+            if source == self.mainview.plainTextEdit_subscribetopicinput:
+                self.eventhandler_plainTextEdit_subscribetopicinput()
                 return True
 
         return super().eventFilter(source, event)

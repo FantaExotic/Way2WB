@@ -5,7 +5,7 @@ class Notifier:
     def __init__(self):
         self.activated = None
         self.baseurl = 'https://ntfy.sh'
-        self.suscription = 'way2wb_notifier_fantaexotic'
+        self.subscriptiontopic = 'way2wb_notifier_fantaexotic'
 
     def set_activated(self) -> None:
         self.activated = True
@@ -17,7 +17,7 @@ class Notifier:
         """sends notification via ntfy.sh service"""
         if not self.activated:
             return
-        url = f'{self.baseurl}/{self.suscription}'
+        url = f'{self.baseurl}/{self.subscriptiontopic}'
         headers = {
             'Priority': '5',  # highest priority
             'Tags': 'alert',
